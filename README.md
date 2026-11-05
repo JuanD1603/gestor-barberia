@@ -20,9 +20,7 @@ Periodo: **2026-2**
 ## 📌 Gestión del Proyecto en Trello
 
 El seguimiento ágil del proyecto, la asignación de tarjetas y la trazabilidad de tareas hacia los commits del repositorio se gestionan a través de:
-* **Enlace al Tablero de Trello:** 
-Puedes ver el progreso y las tareas en nuestro tablero de Trello:
-- [Tablero de Trello - Barveneko](https://trello.com/invite/b/6ae2089115c08b84479fe034/ATTI36035bb953850f412b03353aea1880c423AC1CF5/gestor-de-citas-inventarios-y-ventas-de-una-barberia-llamada-barveneko)
+* **Enlace al Tablero de Trello:** [Tablero Oficial - BarberShop Pro](https://trello.com/b/ENLACE_DEL_TABLERO_AQUI) *(Pendiente por actualizar enlace una vez invitado el docente)*
 
 ---
 
