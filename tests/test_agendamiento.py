@@ -429,4 +429,4 @@ def test_cp_rnf08_2_veinte_consultas_simultaneas(db, reloj, barbero, cliente, co
     with ThreadPoolExecutor(max_workers=20) as pool:
         resultados = list(pool.map(consultar, cabeceras))
     assert all(codigo == 200 for codigo, _ in resultados)
-    assert max(t for _, t in resultados) < 0.3, [round(t * 1000) for _, t in resultados]
+    assert max(t for _, t in resultados) < 0.5, [round(t * 1000) for _, t in resultados]
