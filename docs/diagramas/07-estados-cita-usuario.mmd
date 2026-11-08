@@ -1,0 +1,29 @@
+stateDiagram-v2
+    direction TB
+
+    state "Ciclo de Vida de una Cita" as CitaStates {
+        [*] --> Programada : Cliente reserva cita con exito
+
+        Programada --> Atendida : Barbero confirma atencion completada (RF-26)
+        Programada --> Cancelada : Cliente cancela con anticipacion >= 12h (RF-21, PN-04)
+        Programada --> Cancelada : Admin cancela por eliminacion de barbero (PN-08)
+        Programada --> Inasistencia : Barbero registra no presentacion (RF-27, hora cumplida)
+        Programada --> Programada : Reprogramacion con anticipacion >= 12h (max 1 vez, PN-05)
+
+        Atendida --> [*]
+        Cancelada --> [*]
+        Inasistencia --> [*]
+    }
+
+    state "Ciclo de Estados de Cuenta de Usuario" as UsuarioStates {
+        [*] --> Registrado : Creacion de cuenta (RF-01, RF-05)
+        Registrado --> Activo : Verificacion y primer acceso
+        Activo --> Activo : Inicio y cierre de sesion normal
+        
+        Activo --> Suspendido : Acumula 2 inasistencias en 3 meses (RF-29, PN-10)
+        Suspendido --> Activo : Vence periodo de suspension de 1 mes
+        
+        Activo --> Inactivo : Desactivacion logica por Administrador (RF-07)
+        Inactivo --> [*]
+    }
+

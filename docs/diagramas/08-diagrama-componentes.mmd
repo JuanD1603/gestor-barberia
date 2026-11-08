@@ -1,0 +1,60 @@
+flowchart TB
+    subgraph FrontendSPA ["Capa de Presentacion (Frontend SPA - React 18 / Vite / Tailwind)"]
+        UI_Router["Enrutador de Vistas (React Router)"]
+        UI_Auth["Modulo de Autenticacion (Login / Registro / Recuperar)"]
+        UI_Cliente["Modulo Cliente (Catalogo, Reserva Multaservicio, Mis Citas)"]
+        UI_Barbero["Modulo Barbero (Agenda Diaria, Disponibilidad, Bloqueos)"]
+        UI_Admin["Modulo Admin (Gestion Barberos, Servicios, Supervisores)"]
+        UI_ClientHTTP["Cliente API HTTP (Fetch / Axios / Interceptores)"]
+    end
+
+    subgraph BackendAPI ["Capa de Aplicacion y Enrutamiento (FastAPI / Uvicorn)"]
+        API_App["FastAPI Application Core (main.py)"]
+        API_Security["Middleware de Seguridad y Sesion (RNF-02, PN-07)"]
+        API_Routers["Enrutadores REST (/auth, /barberos, /servicios, /citas, /agenda)"]
+        API_Schemas["Validadores de Entrada y Salida (Pydantic v2 Schemas)"]
+    end
+
+    subgraph DomainLayer ["Capa de Dominio y Logica de Negocio (Clean Architecture)"]
+        SVC_Citas["Servicio de Citas (CitaService)"]
+        SVC_Auth["Servicio de Autenticacion y Hashing (Security)"]
+        SVC_Disponibilidad["Servicio de Disponibilidad y Bloqueos"]
+        POL_Negocio["Motor de Politicas del Negocio (politicas.py PN-01 a PN-10)"]
+        NOTIF_Engine["Motor de Notificaciones y Plantillas (notificaciones.py)"]
+    end
+
+    subgraph PersistenceLayer ["Capa de Acceso a Datos y Persistencia (ORM)"]
+        ORM_Engine["Motor SQLAlchemy 2.0 (database.py)"]
+        ORM_Models["Modelos de Entidad Declarativos (models.py)"]
+        DB_Storage[("Base de Datos Relacional SQLite / MySQL")]
+    end
+
+    subgraph ExternalServices ["Servicios Externos de Infraestructura"]
+        SMTP_Server["Servidor SMTP / Correo Electronico"]
+    end
+
+    %% Relaciones entre capas
+    FrontendSPA -->|HTTP REST JSON / Bearer Token| BackendAPI
+    UI_Router --> UI_Auth
+    UI_Router --> UI_Cliente
+    UI_Router --> UI_Barbero
+    UI_Router --> UI_Admin
+    UI_Auth --> UI_ClientHTTP
+    UI_Cliente --> UI_ClientHTTP
+    UI_Barbero --> UI_ClientHTTP
+    UI_Admin --> UI_ClientHTTP
+
+    API_App --> API_Security
+    API_App --> API_Routers
+    API_Routers --> API_Schemas
+    API_Routers --> DomainLayer
+
+    SVC_Citas --> POL_Negocio
+    SVC_Citas --> NOTIF_Engine
+    SVC_Disponibilidad --> POL_Negocio
+    DomainLayer --> PersistenceLayer
+
+    ORM_Engine --> ORM_Models
+    ORM_Models --> DB_Storage
+    NOTIF_Engine -.->|Protocolo SMTP / TLS| SMTP_Server
+

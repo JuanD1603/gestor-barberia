@@ -1,0 +1,52 @@
+sequenceDiagram
+    autonumber
+    actor Barbero as Barbero
+    participant UI as Frontend (Agenda Barbero)
+    participant Router as API Router (FastAPI)
+    participant CitaSvc as CitaService
+    participant Politicas as PoliticasNegocio
+    participant DB as Base de Datos (SQLAlchemy)
+    participant Notif as NotificacionService
+    actor Cliente as Cliente
+
+    Barbero->>UI: Presiona "Marcar Inasistencia" en cita programada
+    UI->>Router: POST /citas/{id}/inasistencia
+    Note over Router: Valida rol barbero y pertenencia de la cita
+
+    Router->>CitaSvc: marcar_inasistencia(cita_id, barbero_id)
+    CitaSvc->>DB: Obtener cita por ID
+    DB-->>CitaSvc: Registro de la Cita
+
+    alt Fecha y hora de cita aun no ha iniciado
+        CitaSvc-->>Router: HTTP 400 (No se puede marcar antes de la hora)
+        Router-->>UI: Error de anticipacion
+        UI-->>Barbero: Mensaje de restriccion
+    else Hora de inicio superada
+        CitaSvc->>DB: UPDATE citas SET estado = 'Inasistencia' WHERE id = cita_id
+        
+        %% Evaluacion de suspension PN-10
+        CitaSvc->>DB: Contar inasistencias del cliente en los ultimos 3 meses
+        DB-->>CitaSvc: Total inasistencias acumuladas
+
+        alt Total inasistencias >= 2 (PN-10)
+            CitaSvc->>Politicas: calcular_fecha_suspension(1 mes)
+            Politicas-->>CitaSvc: Nueva fecha suspendido_hasta
+            CitaSvc->>DB: UPDATE usuarios SET suspendido_hasta = fecha_fin WHERE id = cliente_id
+            
+            par Notificar suspension al cliente
+                CitaSvc->>Notif: enviar_alerta_suspension(cliente, fecha_fin)
+                Notif-->>Cliente: Correo notificando suspension por 1 mes
+            end
+        else Menor a 2 inasistencias
+            par Notificar inasistencia preventiva
+                CitaSvc->>Notif: enviar_aviso_inasistencia(cliente, advertencia)
+                Notif-->>Cliente: Correo de advertencia sobre inasistencia
+            end
+        end
+
+        DB-->>CitaSvc: Transaccion completada con exito
+        CitaSvc-->>Router: CitaActualizadaResponse (HTTP 200)
+        Router-->>UI: Estado actualizado a Inasistencia
+        UI-->>Barbero: Confirmacion visual en la agenda
+    end
+

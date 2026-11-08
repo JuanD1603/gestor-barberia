@@ -34,6 +34,8 @@ gestor-barberia/
 ├── .gitignore                # Exclusión de archivos sensibles, temporales y dependencias
 ├── docs/                     # Documentación de ingeniería de software
 │   ├── especificacion.md     # Requisitos funcionales y criterios de aceptación (Gherkin)
+│   ├── diagramas-uml.md      # Especificación completa de diagramas UML (UML 2.5 / ISO 19505)
+│   ├── diagramas/            # Fuentes Mermaid (.mmd) e imágenes compiladas (.png y .svg)
 │   ├── plan-de-pruebas.md    # Casos de prueba diseñados (partición de equivalencia, límites)
 │   └── informe-calidad.md    # Registro de defectos, métricas y acciones de mantenimiento
 ├── src/                      # Código fuente de la aplicación
@@ -41,6 +43,23 @@ gestor-barberia/
 │   └── frontend/             # Interfaz de usuario con React, Vite y Tailwind CSS
 └── tests/                    # Pruebas automatizadas (unitarias e integración con pytest)
 ```
+
+---
+
+## Diagramas de Arquitectura y Diseno UML (ISO/IEC 19505)
+
+El sistema cuenta con una especificacion de 10 diagramas modelados en UML 2.5 y compilados en alta resolucion (PNG escala x2 y SVG vectorial) dentro de `docs/diagramas/`. Para una revision exhaustiva de cada modelo, consultar [docs/diagramas-uml.md](docs/diagramas-uml.md):
+
+1. **Diagrama de Casos de Uso del Sistema:** Limites de actores (`Cliente`, `Barbero`, `Administrador`) y relaciones de inclusion/extension.
+2. **Diagrama de Clases del Dominio y Servicios:** Modelo estatico orientado a objetos con atributos, operaciones y dependencias.
+3. **Diagrama Entidad-Relacion (Modelo Relacional):** Tablas relacionales, tipos SQL, claves primarias, foraneas e indices.
+4. **Diagrama de Secuencia - Agendamiento Multaservicio:** Flujo de reserva con validacion de limites y confirmacion por correo.
+5. **Diagrama de Secuencia - Gestion de Inasistencia y Suspension:** Flujo de evaluacion de politicas de suspension automatica (PN-10).
+6. **Diagrama de Secuencia - Reprogramacion con Politicas:** Regla de unica reprogramacion permitida y ventana de anticipacion de 12 horas.
+7. **Diagrama de Estados:** Maquinas de estados para el ciclo de vida de Citas y Cuentas de Usuario.
+8. **Diagrama de Componentes:** Arquitectura en capas limpias (Presentacion, API, Dominio, Persistencia y Notificaciones).
+9. **Diagrama de Despliegue:** Nodos cliente, servidor web frontend, servidor de aplicacion ASGI y motor de base de datos.
+10. **Diagrama de Paquetes:** Modularizacion y desacoplamiento segun estandares ISO/IEC 12207.
 
 ---
 
@@ -140,3 +159,11 @@ pytest tests/ -v
 * **Seguimiento 1:** `git tag entrega-s1`
 * **Seguimiento 2:** `git tag entrega-s2`
 * **Entrega Final:** `git tag entrega-final`
+
+## Pasos para abrirlo desde cmd 
+```cmd
+cd Desktop
+cd gestor-barberia-version-1.1
+iniciar-backend.bat
+iniciar-frontend.bat
+```

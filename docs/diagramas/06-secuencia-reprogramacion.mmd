@@ -1,0 +1,52 @@
+sequenceDiagram
+    autonumber
+    actor Cliente as Cliente
+    participant UI as Frontend (Mis Citas)
+    participant Router as API Router (FastAPI)
+    participant CitaSvc as CitaService
+    participant Politicas as PoliticasNegocio
+    participant DB as Base de Datos (SQLAlchemy)
+    participant Notif as NotificacionService
+
+    Cliente->>UI: Solicita reprogramar cita (nueva fecha y hora)
+    UI->>Router: PATCH /citas/{id}/reprogramar (nueva_fecha, nueva_hora)
+    Note over Router: Valida token y pertenencia de la cita
+
+    Router->>CitaSvc: reprogramar_cita(cita_id, cliente_id, nueva_fecha, nueva_hora)
+    CitaSvc->>DB: Consultar cita por ID
+    DB-->>CitaSvc: Datos de la cita actual
+
+    alt Cita ya fue reprogramada anteriormente (reprogramada == true)
+        CitaSvc-->>Router: HTTP 400 (Politica PN-05: Solo se permite una reprogramacion)
+        Router-->>UI: Mensaje de error (Limite de reprogramacion excedido)
+        UI-->>Cliente: Alerta: Ya se uso la unica reprogramacion permitida
+    else Primera reprogramacion
+        CitaSvc->>Politicas: validar_anticipacion(fecha_hora_cita, ahora >= 12h)
+        alt Menos de 12 horas de anticipacion (PN-05)
+            Politicas-->>CitaSvc: Anticipacion insuficiente
+            CitaSvc-->>Router: HTTP 400 (Politica PN-05: Minimo 12h de anticipacion)
+            Router-->>UI: Error por tiempo extemporaneo
+            UI-->>Cliente: Rechazo por politica de 12 horas
+        else Anticipacion valida (>= 12 horas)
+            CitaSvc->>DB: Validar disponibilidad de barbero en nuevo horario
+            alt Choque de horario con otra cita o bloqueo
+                DB-->>CitaSvc: Horario ocupado
+                CitaSvc-->>Router: HTTP 409 Conflict
+                Router-->>UI: Horario no disponible
+                UI-->>Cliente: Solicitud de elegir otro horario
+            else Horario libre
+                CitaSvc->>DB: UPDATE citas SET fecha = nueva_fecha, hora_inicio = ..., reprogramada = true
+                DB-->>CitaSvc: Cita actualizada exitosamente
+
+                par Notificaciones de reprogramacion
+                    CitaSvc->>Notif: enviar_confirmacion_reprogramacion(cita)
+                    Notif-->>Cliente: Correo con nuevo horario y confirmacion
+                end
+
+                CitaSvc-->>Router: CitaReprogramadaResponse (HTTP 200)
+                Router-->>UI: Confirmacion y nuevo horario
+                UI-->>Cliente: Vista actualizada con la nueva fecha
+            end
+        end
+    end
+

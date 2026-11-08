@@ -1,0 +1,55 @@
+flowchart TB
+    subgraph PkgFrontend ["Paquete: src/frontend"]
+        subgraph PkgViews ["Vistas y Paginas"]
+            V_Auth["AuthViews (Login, Registro, Recuperar)"]
+            V_Cliente["ClienteViews (Catalogo, Reservar, MisCitas)"]
+            V_Barbero["BarberoViews (Agenda, Disponibilidad, Bloqueos)"]
+            V_Admin["AdminViews (Barberos, Servicios, Supervisores)"]
+        end
+        subgraph PkgComponents ["Componentes Reutilizables"]
+            C_UI["UI Primitives (Botones, Modales, Inputs, Tablas)"]
+            C_Layout["Layout (Navbar, Footers, Contenedores)"]
+        end
+    end
+
+    subgraph PkgBackend ["Paquete: src/backend"]
+        subgraph PkgAPI ["Capa de Controladores y Schemas"]
+            API_Main["main.py (Configuracion y Routers)"]
+            API_Schemas["schemas.py (DTOs y Validaciones Pydantic)"]
+        end
+
+        subgraph PkgServices ["Capa de Servicios y Logica de Negocio"]
+            SVC_Services["services.py (Casos de Uso de Citas, Usuarios, etc.)"]
+            SVC_Notif["notificaciones.py / plantillas_correo.py"]
+        end
+
+        subgraph PkgPolicies ["Capa de Politicas y Reglas"]
+            POL_Rules["politicas.py (Reglas PN-01 a PN-10)"]
+        end
+
+        subgraph PkgSecurity ["Capa de Seguridad"]
+            SEC_Security["security.py (Cifrado bcrypt, Hashing de Tokens)"]
+        end
+
+        subgraph PkgData ["Capa de Acceso a Datos y Persistencia"]
+            DATA_Models["models.py (Entidades ORM SQLAlchemy)"]
+            DATA_DB["database.py (Conexion y Sesion de BD)"]
+        end
+    end
+
+    subgraph PkgTests ["Paquete: tests"]
+        T_Unit["Pruebas Unitarias (Cuentas, Barberos, Servicios, Citas)"]
+        T_Inasistencia["Pruebas de Inasistencias y Suspensiones"]
+        T_NonFunc["Pruebas No Funcionales (Seguridad, Concurrencia, Zonas Horarias)"]
+    end
+
+    %% Dependencias entre paquetes
+    PkgViews -.->|usa| PkgComponents
+    PkgFrontend -->|HTTP REST JSON| PkgAPI
+    PkgAPI -->|delega a| PkgServices
+    PkgAPI -.->|valida con| API_Schemas
+    PkgServices -->|evalua| POL_Rules
+    PkgServices -->|utiliza| SEC_Security
+    PkgServices -->|consulta / persiste| DATA_Models
+    DATA_Models -->|mapea con| DATA_DB
+    PkgTests -.->|verifica cobertura| PkgBackend

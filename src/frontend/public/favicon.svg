@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+  </defs>
+  <!-- Contenedor premium con bordes dorados -->
+  <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#bgGrad)" stroke="#F59E0B" stroke-width="1.5" stroke-opacity="0.8"/>
+  <!-- Tijeras profesionales de barberia -->
+  <g transform="translate(4, 4)" stroke="url(#goldGrad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="6" cy="6" r="3" fill="#F59E0B" fill-opacity="0.25"/>
+    <path d="M8.12 8.12 12 12"/>
+    <path d="M20 4 8.12 15.88"/>
+    <circle cx="6" cy="18" r="3" fill="#F59E0B" fill-opacity="0.25"/>
+    <path d="M14.8 14.8 20 20"/>
+  </g>
+</svg>
+

@@ -1,0 +1,80 @@
+flowchart LR
+    %% Actores Principales del Sistema
+    Cliente["Cliente"]
+    Barbero["Barbero"]
+    Admin["Administrador"]
+    Notificador["Servicio de Notificaciones"]
+
+    subgraph Sistema ["BarberShop Pro - Limite del Sistema"]
+        %% Modulo de Autenticacion y Cuentas
+        CU01(["CU01: Iniciar sesion"])
+        CU02(["CU02: Cerrar sesion"])
+        CU03(["CU03: Recuperar contrasena"])
+        CU04(["CU04: Registrar cuenta de cliente"])
+
+        %% Modulo de Administracion
+        CU05(["CU05: Gestionar barberos"])
+        CU06(["CU06: Gestionar catalogo de servicios"])
+        CU07(["CU07: Supervisar citas globales"])
+
+        %% Modulo de Disponibilidad y Agenda (Barbero)
+        CU08(["CU08: Configurar horarios semanales"])
+        CU09(["CU09: Registrar bloqueo de fechas"])
+        CU10(["CU10: Consultar agenda de citas"])
+        CU11(["CU11: Registrar atencion de cita"])
+        CU12(["CU12: Registrar inasistencia de cliente"])
+
+        %% Modulo de Agendamiento (Cliente)
+        CU13(["CU13: Consultar disponibilidad"])
+        CU14(["CU14: Agendar cita multaservicio"])
+        CU15(["CU15: Consultar mis citas"])
+        CU16(["CU16: Cancelar cita reservada"])
+        CU17(["CU17: Reprogramar cita"])
+
+        %% Casos de uso incluidos y extendidos
+        CU18(["CU18: Calcular duracion y costo total"])
+        CU19(["CU19: Generar codigo de reserva"])
+        CU20(["CU20: Enviar notificacion por correo"])
+        CU21(["CU21: Evaluar politica de suspension"])
+    end
+
+    %% Relaciones Actor -> Caso de Uso (Cliente)
+    Cliente --> CU01
+    Cliente --> CU02
+    Cliente --> CU03
+    Cliente --> CU04
+    Cliente --> CU13
+    Cliente --> CU14
+    Cliente --> CU15
+    Cliente --> CU16
+    Cliente --> CU17
+
+    %% Relaciones Actor -> Caso de Uso (Barbero)
+    Barbero --> CU01
+    Barbero --> CU02
+    Barbero --> CU03
+    Barbero --> CU08
+    Barbero --> CU09
+    Barbero --> CU10
+    Barbero --> CU11
+    Barbero --> CU12
+
+    %% Relaciones Actor -> Caso de Uso (Administrador)
+    Admin --> CU01
+    Admin --> CU02
+    Admin --> CU03
+    Admin --> CU05
+    Admin --> CU06
+    Admin --> CU07
+
+    %% Relaciones include / extend
+    CU14 -.->|include| CU18
+    CU14 -.->|include| CU19
+    CU14 -.->|include| CU20
+    CU12 -.->|include| CU21
+    CU16 -.->|include| CU20
+    CU17 -.->|include| CU20
+
+    %% Soporte del sistema de notificaciones
+    CU20 --- Notificador
+
