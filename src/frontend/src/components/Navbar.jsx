@@ -14,19 +14,31 @@ function opcionesDePestana(rol) {
   };
 }
 
-export default function Navbar({ activeTab, setActiveTab }) {
+export default function Navbar({ activeTab, setActiveTab, vistaPublica = 'bienvenida', onCambiarVistaPublica }) {
   const { usuario, rol, cerrarSesion } = useAuth();
   const opciones = opcionesDePestana(rol);
   const pestanas = pestanasDeRol(rol);
+
+  const manejarClickLogo = () => {
+    if (usuario) {
+      setActiveTab(pestanaInicial(rol));
+    } else if (onCambiarVistaPublica) {
+      onCambiarVistaPublica('bienvenida');
+    }
+  };
 
   return (
     <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-2">
         <div
-          className={`flex items-center gap-3 ${usuario ? 'cursor-pointer' : ''}`}
-          onClick={() => usuario && setActiveTab(pestanaInicial(rol))}
+          role="button"
+          tabIndex={0}
+          title="Ir al inicio"
+          onClick={manejarClickLogo}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && manejarClickLogo()}
+          className="flex items-center gap-3 cursor-pointer group select-none"
         >
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0 group-hover:border-amber-500/60 group-hover:bg-amber-500/20 transition">
             <Scissors className="w-5 h-5 rotate-45" />
           </div>
           <div className="hidden sm:block">
@@ -36,6 +48,37 @@ export default function Navbar({ activeTab, setActiveTab }) {
             <p className="text-xs text-slate-400">Sistema de Agendamiento</p>
           </div>
         </div>
+
+        {!usuario && onCambiarVistaPublica && (
+          <div className="flex items-center gap-2">
+            {vistaPublica !== 'bienvenida' ? (
+              <button
+                type="button"
+                onClick={() => onCambiarVistaPublica('bienvenida')}
+                className="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800 transition"
+              >
+                Inicio
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onCambiarVistaPublica('login')}
+                  className="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition"
+                >
+                  Iniciar Sesión
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onCambiarVistaPublica('registro')}
+                  className="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 transition shadow-md shadow-amber-500/20"
+                >
+                  Registrarse
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         {usuario && (
           <>

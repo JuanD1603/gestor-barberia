@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './AuthContext';
 import { pestanaInicial, puedeVerPestana } from './roles';
 import Navbar from './components/Navbar';
+import WelcomePage from './components/WelcomePage';
 import AuthPage, { ResetPasswordPage } from './components/AuthPage';
 import BookingWizard from './components/BookingWizard';
 import BarberAgenda from './components/BarberAgenda';
@@ -21,12 +22,14 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState(null);
   const [resultado, setResultado] = useState(null); // { tipo: 'agendada' | 'reprogramada' | 'cancelada', cita }
   const [tokenReset, setTokenReset] = useState(leerTokenDeRestablecimiento);
+  const [vistaPublica, setVistaPublica] = useState('bienvenida'); // 'bienvenida' | 'login' | 'registro'
 
   // Al cerrarse la sesión (manualmente o por expiración) se descarta el estado de la sesión anterior.
   useEffect(() => {
     if (!usuario) {
       setActiveTab(null);
       setResultado(null);
+      setVistaPublica('bienvenida');
     }
   }, [usuario]);
 
@@ -46,13 +49,28 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      <Navbar activeTab={pestana} setActiveTab={irAPestana} />
+      <Navbar
+        activeTab={pestana}
+        setActiveTab={irAPestana}
+        vistaPublica={vistaPublica}
+        onCambiarVistaPublica={setVistaPublica}
+      />
 
-      <main className={`flex-1 ${!usuario ? 'flex flex-col justify-center py-2 sm:py-4' : 'pb-16'}`}>
+      <main className={`flex-1 ${!usuario && vistaPublica !== 'bienvenida' ? 'flex flex-col justify-center py-2 sm:py-4' : 'pb-16'}`}>
         {tokenReset !== null ? (
           <ResetPasswordPage token={tokenReset} onTerminar={terminarRestablecimiento} />
         ) : !usuario ? (
-          <AuthPage />
+          vistaPublica === 'bienvenida' ? (
+            <WelcomePage
+              onIniciarSesion={() => setVistaPublica('login')}
+              onRegistrarse={() => setVistaPublica('registro')}
+            />
+          ) : (
+            <AuthPage
+              vistaInicial={vistaPublica === 'registro' ? 'registro' : 'login'}
+              onVolverInicio={() => setVistaPublica('bienvenida')}
+            />
+          )
         ) : (
           <>
             {pestana === 'booking' && (
@@ -85,7 +103,7 @@ function AppContent() {
       )}
 
       {/* Footer */}
-      <footer className={`border-t border-slate-900 bg-slate-950 ${!usuario ? 'py-3' : 'py-6'} text-center text-xs text-slate-500`}>
+      <footer className={`border-t border-slate-900 bg-slate-950 ${!usuario && vistaPublica !== 'bienvenida' ? 'py-3' : 'py-6'} text-center text-xs text-slate-500`}>
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>BarberShop Pro — Ingeniería de Software II (Cotecnova 2026-2)</span>
           <span>Docente: Felipe Gutiérrez Isaza</span>

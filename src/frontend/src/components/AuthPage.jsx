@@ -37,7 +37,7 @@ function EnlaceTexto({ onClick, children }) {
 // ---------------------------------------------------------------------------
 // Inicio de sesión (RF-02, RF-30)
 // ---------------------------------------------------------------------------
-function Login({ emailInicial, aviso, onCambiarVista }) {
+function Login({ emailInicial, aviso, onCambiarVista, onVolverInicio }) {
   const { iniciarSesion, avisoSesion } = useAuth();
   const [email, setEmail] = useState(emailInicial || '');
   const [password, setPassword] = useState('');
@@ -107,6 +107,15 @@ function Login({ emailInicial, aviso, onCambiarVista }) {
         <span>
           ¿No tienes cuenta? <EnlaceTexto onClick={() => onCambiarVista('registro')}>Regístrate</EnlaceTexto>
         </span>
+        {onVolverInicio && (
+          <button
+            type="button"
+            onClick={onVolverInicio}
+            className="text-xs text-slate-500 hover:text-slate-300 pt-2 border-t border-slate-800 w-full flex items-center justify-center gap-1.5 transition"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Volver al Inicio
+          </button>
+        )}
       </div>
     </Tarjeta>
   );
@@ -187,9 +196,20 @@ function Registro({ onCambiarVista, onRegistrado }) {
           {enviando ? 'Creando cuenta...' : 'Crear cuenta'}
         </button>
       </form>
-      <p className="text-sm text-slate-400 text-center">
-        ¿Ya tienes cuenta? <EnlaceTexto onClick={() => onCambiarVista('login')}>Inicia sesión</EnlaceTexto>
-      </p>
+      <div className="flex flex-col items-center gap-2 text-sm text-slate-400 text-center pt-1">
+        <p>
+          ¿Ya tienes cuenta? <EnlaceTexto onClick={() => onCambiarVista('login')}>Inicia sesión</EnlaceTexto>
+        </p>
+        {onVolverInicio && (
+          <button
+            type="button"
+            onClick={onVolverInicio}
+            className="text-xs text-slate-500 hover:text-slate-300 pt-2 border-t border-slate-800 w-full flex items-center justify-center gap-1.5 transition"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Volver al Inicio
+          </button>
+        )}
+      </div>
     </Tarjeta>
   );
 }
@@ -197,7 +217,7 @@ function Registro({ onCambiarVista, onRegistrado }) {
 // ---------------------------------------------------------------------------
 // Solicitud de recuperación de contraseña (RF-04)
 // ---------------------------------------------------------------------------
-function Recuperar({ onCambiarVista }) {
+function Recuperar({ onCambiarVista, onVolverInicio }) {
   const [email, setEmail] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
@@ -231,13 +251,24 @@ function Recuperar({ onCambiarVista }) {
           {enviando ? 'Enviando...' : 'Enviar enlace'}
         </button>
       </form>
-      <button
-        type="button"
-        onClick={() => onCambiarVista('login')}
-        className="text-sm text-slate-400 hover:text-white flex items-center gap-1.5 mx-auto transition"
-      >
-        <ArrowLeft className="w-4 h-4" /> Volver a iniciar sesión
-      </button>
+      <div className="flex flex-col items-center gap-2 pt-2">
+        <button
+          type="button"
+          onClick={() => onCambiarVista('login')}
+          className="text-sm text-slate-400 hover:text-white flex items-center gap-1.5 mx-auto transition"
+        >
+          <ArrowLeft className="w-4 h-4" /> Volver a iniciar sesión
+        </button>
+        {onVolverInicio && (
+          <button
+            type="button"
+            onClick={onVolverInicio}
+            className="text-xs text-slate-500 hover:text-slate-300 pt-2 border-t border-slate-800 w-full flex items-center justify-center gap-1.5 transition"
+          >
+            Volver al Inicio
+          </button>
+        )}
+      </div>
     </Tarjeta>
   );
 }
@@ -245,15 +276,22 @@ function Recuperar({ onCambiarVista }) {
 // ---------------------------------------------------------------------------
 // Pantalla de acceso (sin sesión): inicio de sesión, registro y recuperación
 // ---------------------------------------------------------------------------
-export default function AuthPage() {
-  const [vista, setVista] = useState('login');
+export default function AuthPage({ vistaInicial = 'login', onVolverInicio }) {
+  const [vista, setVista] = useState(vistaInicial);
   const [emailRegistrado, setEmailRegistrado] = useState('');
   const [aviso, setAviso] = useState('');
+
+  useEffect(() => {
+    if (vistaInicial) {
+      setVista(vistaInicial);
+    }
+  }, [vistaInicial]);
 
   if (vista === 'registro') {
     return (
       <Registro
         onCambiarVista={setVista}
+        onVolverInicio={onVolverInicio}
         onRegistrado={(email) => {
           setEmailRegistrado(email);
           setAviso('Tu cuenta fue creada. Ya puedes iniciar sesión.');
@@ -262,8 +300,18 @@ export default function AuthPage() {
       />
     );
   }
-  if (vista === 'recuperar') return <Recuperar onCambiarVista={setVista} />;
-  return <Login emailInicial={emailRegistrado} aviso={aviso} onCambiarVista={(v) => { setAviso(''); setVista(v); }} />;
+  if (vista === 'recuperar') return <Recuperar onCambiarVista={setVista} onVolverInicio={onVolverInicio} />;
+  return (
+    <Login
+      emailInicial={emailRegistrado}
+      aviso={aviso}
+      onVolverInicio={onVolverInicio}
+      onCambiarVista={(v) => {
+        setAviso('');
+        setVista(v);
+      }}
+    />
+  );
 }
 
 // ---------------------------------------------------------------------------
