@@ -163,3 +163,4 @@ export default function WelcomePage({ onIniciarSesion, onRegistrarse }) {
     </div>
   );
 }
+

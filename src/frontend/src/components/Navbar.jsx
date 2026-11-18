@@ -90,11 +90,10 @@ export default function Navbar({ activeTab, setActiveTab, vistaPublica = 'bienve
                     key={id}
                     onClick={() => setActiveTab(id)}
                     title={etiqueta}
-                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 ${
-                      activeTab === id
+                    className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition flex items-center gap-2 ${activeTab === id
                         ? 'bg-amber-500 text-slate-950 font-semibold shadow-lg shadow-amber-500/20'
                         : 'text-slate-300 hover:bg-slate-800'
-                    }`}
+                      }`}
                   >
                     <Icono className="w-4 h-4" />
                     <span className="hidden sm:inline">{etiqueta}</span>
