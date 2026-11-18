@@ -179,8 +179,8 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
       <div className="flex items-center justify-between mb-8 relative">
         <div className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 w-full bg-slate-800 -z-0" />
         {[
-          { num: 1, label: 'Servicios', icon: Scissors },
-          { num: 2, label: 'Barbero', icon: User },
+          { num: 1, label: 'Barbero', icon: User },
+          { num: 2, label: 'Servicios', icon: Scissors },
           { num: 3, label: 'Fecha y Hora', icon: CalendarIcon },
           { num: 4, label: 'Confirmación', icon: Check },
         ].map((item) => {
@@ -225,12 +225,82 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
         </Alerta>
       )}
 
-      {/* ================= PASO 1: SERVICIOS ================= */}
+      {/* ================= PASO 1: BARBEROS ================= */}
       {step === 1 && (
         <div>
           <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-white">Selecciona a tu Barbero</h2>
+            <p className="text-slate-400 text-sm mt-1">Elige con quién quieres atenderte.</p>
+          </div>
+
+          {loadingCatalogo ? (
+            <div className="py-12 text-center text-slate-400 text-sm">Cargando barberos...</div>
+          ) : barberos.length === 0 ? (
+            <div className="py-12 text-center text-slate-500 text-sm">No hay barberos disponibles por el momento.</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {barberos.map((b) => {
+                const selected = selectedBarbero?.id === b.id;
+                return (
+                  <button
+                    type="button"
+                    key={b.id}
+                    onClick={() => {
+                      setSelectedBarbero(b);
+                      setErrorMessage('');
+                    }}
+                    aria-pressed={selected}
+                    className={`p-5 rounded-2xl border cursor-pointer transition text-center flex flex-col justify-between ${
+                      selected
+                        ? 'bg-amber-500/10 border-amber-500 shadow-lg shadow-amber-500/10'
+                        : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <div>
+                      {b.foto_url ? (
+                        <img
+                          src={b.foto_url}
+                          alt={b.nombre}
+                          className="w-16 h-16 rounded-2xl object-cover border border-slate-700 mx-auto mb-3"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 mx-auto flex items-center justify-center text-amber-400 font-bold text-xl mb-3">
+                          {b.nombre[0]}
+                        </div>
+                      )}
+                      <h3 className="font-bold text-base text-white">{b.nombre}</h3>
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-slate-800 w-full">
+                      <span className={`text-xs font-semibold ${selected ? 'text-amber-400' : 'text-slate-500'}`}>
+                        {selected ? 'Seleccionado ✓' : 'Seleccionar'}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mt-8 flex justify-end">
+            <button
+              disabled={!selectedBarbero}
+              onClick={() => setStep(2)}
+              className="px-6 py-3 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:hover:bg-amber-500 text-slate-950 font-bold rounded-xl transition flex items-center gap-2"
+            >
+              Siguiente: Elegir Servicios <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ================= PASO 2: SERVICIOS ================= */}
+      {step === 2 && (
+        <div>
+          <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-white">Selecciona tus Servicios</h2>
-            <p className="text-slate-400 text-sm mt-1">Puedes elegir uno o varios servicios para la misma cita.</p>
+            <p className="text-slate-400 text-sm mt-1">
+              Puedes elegir uno o varios servicios para tu cita con {selectedBarbero?.nombre}.
+            </p>
           </div>
 
           {loadingCatalogo ? (
@@ -297,81 +367,15 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end">
-            <button
-              disabled={serviciosIds.length === 0 || !resumen || loadingResumen}
-              onClick={() => setStep(2)}
-              className="px-6 py-3 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:hover:bg-amber-500 text-slate-950 font-bold rounded-xl transition flex items-center gap-2"
-            >
-              Siguiente: Elegir Barbero <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ================= PASO 2: BARBEROS ================= */}
-      {step === 2 && (
-        <div>
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-white">Selecciona a tu Barbero</h2>
-            <p className="text-slate-400 text-sm mt-1">Elige con quién quieres atenderte.</p>
-          </div>
-
-          {barberos.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 text-sm">No hay barberos disponibles por el momento.</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {barberos.map((b) => {
-                const selected = selectedBarbero?.id === b.id;
-                return (
-                  <button
-                    type="button"
-                    key={b.id}
-                    onClick={() => {
-                      setSelectedBarbero(b);
-                      setErrorMessage('');
-                    }}
-                    aria-pressed={selected}
-                    className={`p-5 rounded-2xl border cursor-pointer transition text-center flex flex-col justify-between ${
-                      selected
-                        ? 'bg-amber-500/10 border-amber-500 shadow-lg shadow-amber-500/10'
-                        : 'bg-slate-900 border-slate-800 hover:border-slate-700'
-                    }`}
-                  >
-                    <div>
-                      {b.foto_url ? (
-                        <img
-                          src={b.foto_url}
-                          alt={b.nombre}
-                          className="w-16 h-16 rounded-2xl object-cover border border-slate-700 mx-auto mb-3"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 mx-auto flex items-center justify-center text-amber-400 font-bold text-xl mb-3">
-                          {b.nombre[0]}
-                        </div>
-                      )}
-                      <h3 className="font-bold text-base text-white">{b.nombre}</h3>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-slate-800 w-full">
-                      <span className={`text-xs font-semibold ${selected ? 'text-amber-400' : 'text-slate-500'}`}>
-                        {selected ? 'Seleccionado ✓' : 'Seleccionar'}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
           <div className="mt-8 flex justify-between">
             <button
               onClick={() => setStep(1)}
               className="px-5 py-3 border border-slate-700 hover:bg-slate-800 text-slate-300 font-medium rounded-xl transition flex items-center gap-2"
             >
-              <ArrowLeft className="w-4 h-4" /> Volver a Servicios
+              <ArrowLeft className="w-4 h-4" /> Volver a Barbero
             </button>
             <button
-              disabled={!selectedBarbero}
+              disabled={serviciosIds.length === 0 || !resumen || loadingResumen}
               onClick={() => setStep(3)}
               className="px-6 py-3 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:hover:bg-amber-500 text-slate-950 font-bold rounded-xl transition flex items-center gap-2"
             >
@@ -484,7 +488,7 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
               onClick={() => setStep(2)}
               className="px-5 py-3 border border-slate-700 hover:bg-slate-800 text-slate-300 font-medium rounded-xl transition flex items-center gap-2"
             >
-              <ArrowLeft className="w-4 h-4" /> Volver a Barberos
+              <ArrowLeft className="w-4 h-4" /> Volver a Servicios
             </button>
             <button
               disabled={!selectedSlot}
