@@ -48,7 +48,7 @@ function AppContent() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       <Navbar activeTab={pestana} setActiveTab={irAPestana} />
 
-      <main className="flex-1 pb-16">
+      <main className={`flex-1 ${!usuario ? 'flex flex-col justify-center py-2 sm:py-4' : 'pb-16'}`}>
         {tokenReset !== null ? (
           <ResetPasswordPage token={tokenReset} onTerminar={terminarRestablecimiento} />
         ) : !usuario ? (
@@ -85,9 +85,9 @@ function AppContent() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-500">
+      <footer className={`border-t border-slate-900 bg-slate-950 ${!usuario ? 'py-3' : 'py-6'} text-center text-xs text-slate-500`}>
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>💈 BarberShop Pro — Ingeniería de Software II (Cotecnova 2026-2)</span>
+          <span>BarberShop Pro — Ingeniería de Software II (Cotecnova 2026-2)</span>
           <span>Docente: Felipe Gutiérrez Isaza</span>
         </div>
       </footer>

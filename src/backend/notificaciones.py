@@ -23,13 +23,17 @@ Prueba real de envío (desde src/backend, con el .env configurado):
     python notificaciones.py destinatario@ejemplo.com
 """
 import datetime
+import json
 import logging
 import os
+import re
 import smtplib
 import ssl
 import sys
 import threading
 import time
+import urllib.parse
+import urllib.request
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -66,6 +70,8 @@ TIMEOUT_SEGUNDOS = 10
 REMITENTE_POR_DEFECTO = "no-responder@barbershop.pro"
 HOSTS_GMAIL = ("smtp.gmail.com", "smtp.googlemail.com")
 VARIABLES_SMTP = ("SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM_EMAIL", "SMTP_FROM_NAME", "SMTP_FROM")
+VARIABLES_TELEGRAM = ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID")
+VARIABLES_WHATSAPP = ("WHATSAPP_API_TOKEN", "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_API_URL", "WHATSAPP_ADMIN_PHONE")
 
 
 # ==========================================
@@ -457,6 +463,184 @@ def recuperacion_password(usuario, enlace: str) -> None:
     ))
 
 
+# ==========================================
+# Integración Multicanal: Telegram y WhatsApp
+# ==========================================
+def normalizar_telefono(telefono: Optional[str]) -> Optional[str]:
+    """Limpia el teléfono para formato numérico internacional E.164.
+    Para móviles de Colombia de 10 dígitos que inician en 3, antepone el código de país 57."""
+    digitos = re.sub(r"\D", "", telefono or "")
+    if not digitos or len(digitos) < 7:
+        return None
+    if len(digitos) == 10 and digitos.startswith("3"):
+        return f"57{digitos}"
+    return digitos
+
+
+def enviar_telegram(mensaje: str, parse_mode: str = "HTML") -> bool:
+    """Envía una notificación a Telegram mediante la Bot API oficial usando urllib estándar."""
+    token = _variable("TELEGRAM_BOT_TOKEN")
+    chat_id = _variable("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        return False
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = json.dumps({
+        "chat_id": chat_id,
+        "text": mensaje,
+        "parse_mode": parse_mode,
+        "disable_web_page_preview": True,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={"Content-Type": "application/json", "User-Agent": "BarberShopPro/1.1"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT_SEGUNDOS) as resp:
+            exito = 200 <= resp.status < 300
+            if exito:
+                logger.info("Notificación de Telegram enviada exitosamente al chat %s", chat_id)
+            return exito
+    except Exception as e:
+        logger.warning("No se pudo enviar notificación a Telegram: %s", e)
+        return False
+
+
+def enviar_whatsapp(destinatario_telefono: str, mensaje: str) -> bool:
+    """Envía un mensaje por WhatsApp usando WhatsApp Cloud API (Meta) o Gateway REST configurable."""
+    token = _variable("WHATSAPP_API_TOKEN")
+    phone_id = _variable("WHATSAPP_PHONE_NUMBER_ID")
+    api_url = _variable("WHATSAPP_API_URL")
+
+    numero = normalizar_telefono(destinatario_telefono)
+    if not numero:
+        return False
+
+    if not api_url and (not token or not phone_id):
+        return False
+
+    try:
+        if api_url:
+            url = api_url
+            headers = {"Content-Type": "application/json", "User-Agent": "BarberShopPro/1.1"}
+            if token:
+                headers["Authorization"] = f"Bearer {token}"
+            payload = json.dumps({
+                "to": numero,
+                "phone": numero,
+                "message": mensaje,
+                "text": mensaje,
+            }).encode("utf-8")
+        else:
+            url = f"https://graph.facebook.com/v18.0/{phone_id}/messages"
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {token}",
+                "User-Agent": "BarberShopPro/1.1",
+            }
+            payload = json.dumps({
+                "messaging_product": "whatsapp",
+                "recipient_type": "individual",
+                "to": numero,
+                "type": "text",
+                "text": {"preview_url": False, "body": mensaje},
+            }).encode("utf-8")
+
+        req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=TIMEOUT_SEGUNDOS) as resp:
+            exito = 200 <= resp.status < 300
+            if exito:
+                logger.info("Mensaje WhatsApp enviado exitosamente al número %s", numero)
+            return exito
+    except Exception as e:
+        logger.warning("No se pudo enviar mensaje por WhatsApp a %s: %s", numero, e)
+        return False
+
+
+def enlace_whatsapp(telefono: str, mensaje: str) -> str:
+    """Genera enlace directo Click-to-Chat para WhatsApp."""
+    numero = normalizar_telefono(telefono)
+    texto_encoded = urllib.parse.quote(mensaje)
+    return f"https://wa.me/{numero}?text={texto_encoded}" if numero else f"https://wa.me/?text={texto_encoded}"
+
+
+def _resumen_servicios(cita) -> str:
+    if not hasattr(cita, "servicios") or not cita.servicios:
+        return "Servicio estándar"
+    return ", ".join(f"{cs.servicio.nombre} ({_dinero(cs.precio_aplicado)})" for cs in cita.servicios)
+
+
+def _mensaje_telegram_cita(cita, titulo: str, extra: Optional[str] = None) -> str:
+    cliente_nombre = cita.cliente.nombre if hasattr(cita, "cliente") and cita.cliente else "Cliente"
+    cliente_tel = cita.cliente.telefono if hasattr(cita, "cliente") and cita.cliente and cita.cliente.telefono else "No registrado"
+    barbero_nombre = cita.barbero.nombre if hasattr(cita, "barbero") and cita.barbero else "Barbero"
+
+    lineas = [
+        f"<b>{NOMBRE_NEGOCIO} — {titulo}</b>",
+        "",
+        f"<b>Código de reserva:</b> <code>{cita.codigo_reserva}</code>",
+        f"<b>Cliente:</b> {cliente_nombre} (Tel: {cliente_tel})",
+        f"<b>Barbero:</b> {barbero_nombre}",
+        f"<b>Fecha:</b> {_fecha_con_dia(cita.fecha)}",
+        f"<b>Horario:</b> {_hora(cita.hora_inicio)} a {_hora(cita.hora_fin)}",
+        f"<b>Servicios:</b> {_resumen_servicios(cita)}",
+        f"<b>Total:</b> {_dinero(cita.total)}",
+    ]
+    if extra:
+        lineas.extend(["", f"<b>Detalle adicional:</b> {extra}"])
+    return "\n".join(lineas)
+
+
+def _mensaje_whatsapp_cita(cita, titulo: str, extra: Optional[str] = None) -> str:
+    cliente_nombre = cita.cliente.nombre if hasattr(cita, "cliente") and cita.cliente else "Cliente"
+    barbero_nombre = cita.barbero.nombre if hasattr(cita, "barbero") and cita.barbero else "Barbero"
+
+    lineas = [
+        f"*{NOMBRE_NEGOCIO} — {titulo}*",
+        "",
+        f"*Código de reserva:* {cita.codigo_reserva}",
+        f"*Cliente:* {cliente_nombre}",
+        f"*Barbero:* {barbero_nombre}",
+        f"*Fecha:* {_fecha_con_dia(cita.fecha)}",
+        f"*Horario:* {_hora(cita.hora_inicio)} a {_hora(cita.hora_fin)}",
+        f"*Servicios:* {_resumen_servicios(cita)}",
+        f"*Total a pagar:* {_dinero(cita.total)}",
+    ]
+    if extra:
+        lineas.extend(["", f"*Detalle adicional:* {extra}"])
+    return "\n".join(lineas)
+
+
+def _despachar_multicanal(cita, titulo: str, extra: Optional[str] = None) -> None:
+    """Envía notificaciones a Telegram y WhatsApp en segundo plano sin bloquear el flujo principal."""
+    def _tarea():
+        try:
+            # 1. Notificación al canal/chat configurado de Telegram
+            msg_tg = _mensaje_telegram_cita(cita, titulo, extra)
+            enviar_telegram(msg_tg)
+
+            # 2. Notificación a WhatsApp
+            msg_wa = _mensaje_whatsapp_cita(cita, titulo, extra)
+            # Al cliente si tiene teléfono registrado
+            if hasattr(cita, "cliente") and cita.cliente and cita.cliente.telefono:
+                enviar_whatsapp(cita.cliente.telefono, msg_wa)
+            # Al barbero si tiene teléfono
+            if hasattr(cita, "barbero") and cita.barbero and hasattr(cita.barbero, "usuario") and cita.barbero.usuario.telefono:
+                enviar_whatsapp(cita.barbero.usuario.telefono, msg_wa)
+            # Al número de administración si está configurado
+            admin_phone = _variable("WHATSAPP_ADMIN_PHONE")
+            if admin_phone:
+                enviar_whatsapp(admin_phone, msg_wa)
+        except Exception as err:
+            logger.warning("Error en despacho multicanal (Telegram/WhatsApp): %s", err)
+
+    try:
+        _ejecutor.submit(_tarea)
+    except Exception:
+        threading.Thread(target=_tarea, daemon=True).start()
+
+
 def confirmacion_cita(cita) -> None:
     anticipacion = _horas(politicas.ANTICIPACION_MINIMA)
     _enviar_contenido(cita.cliente.email, ContenidoCorreo(
@@ -472,6 +656,7 @@ def confirmacion_cita(cita) -> None:
         ],
         resumen=f"Tu cita del {_fecha(cita.fecha)} a las {_hora(cita.hora_inicio)} quedó confirmada.",
     ))
+    _despachar_multicanal(cita, "Cita Confirmada")
 
 
 def cita_cancelada(cita) -> None:
@@ -496,6 +681,7 @@ def cita_cancelada(cita) -> None:
         titulo_datos="Cita cancelada",
         resumen=resumen,
     ))
+    _despachar_multicanal(cita, "Cita Cancelada")
 
 
 def cita_reprogramada(cita, fecha_anterior: datetime.date, hora_anterior: datetime.time) -> None:
@@ -525,6 +711,7 @@ def cita_reprogramada(cita, fecha_anterior: datetime.date, hora_anterior: dateti
         titulo_datos="Nuevo horario de la cita",
         resumen=resumen,
     ))
+    _despachar_multicanal(cita, "Cita Reprogramada", f"Horario previo: {_fecha_con_dia(fecha_anterior)} {_hora(hora_anterior)}")
 
 
 def cita_cancelada_por_baja_del_barbero(cita) -> None:
@@ -542,6 +729,7 @@ def cita_cancelada_por_baja_del_barbero(cita) -> None:
         boton=("Agendar una nueva cita", _url_frontend()),
         resumen=f"Tu cita {cita.codigo_reserva} fue cancelada porque el barbero ya no atiende.",
     ))
+    _despachar_multicanal(cita, "Cita Cancelada (Baja de Barbero)")
 
 
 # ==========================================

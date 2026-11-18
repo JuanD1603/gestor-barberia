@@ -829,3 +829,124 @@ def test_env_example_declara_las_variables_smtp_sin_credenciales():
         assert variable in lineas, variable
     assert [lineas[v] for v in ("SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM_EMAIL")] == [""] * 4
     assert "SMTP_FROM" not in lineas  # el nombre antiguo ya no se anuncia (sigue aceptándose en el código)
+
+
+# ==========================================
+# Notificaciones Telegram y WhatsApp
+# ==========================================
+def test_normalizar_telefono():
+    assert notificaciones.normalizar_telefono("+57 300 123 4567") == "573001234567"
+    assert notificaciones.normalizar_telefono("0412-555-0199") == "04125550199"
+    assert notificaciones.normalizar_telefono("(55) 1234-5678") == "5512345678"
+    assert notificaciones.normalizar_telefono(None) is None
+    assert notificaciones.normalizar_telefono("") is None
+    assert notificaciones.normalizar_telefono("abc") is None
+
+
+def test_enlace_whatsapp():
+    url = notificaciones.enlace_whatsapp("+57 300 123 4567", "Hola Reserva")
+    assert "https://wa.me/573001234567" in url
+    assert "Hola" in url
+
+
+def test_enviar_telegram_sin_configuracion(monkeypatch):
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
+    assert notificaciones.enviar_telegram("Mensaje de prueba") is False
+
+
+def test_enviar_telegram_simulado(monkeypatch):
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "fake_bot_token")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "123456789")
+
+    peticiones = []
+
+    class MockResponse:
+        status = 200
+        def __enter__(self):
+            return self
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+    def mock_urlopen(req, timeout=10):
+        peticiones.append(req)
+        return MockResponse()
+
+    import urllib.request
+    monkeypatch.setattr(urllib.request, "urlopen", mock_urlopen)
+
+    exito = notificaciones.enviar_telegram("Hola desde prueba")
+    assert exito is True
+    assert len(peticiones) == 1
+    assert "api.telegram.org/botfake_bot_token/sendMessage" in peticiones[0].full_url
+
+
+def test_enviar_whatsapp_sin_configuracion(monkeypatch):
+    monkeypatch.delenv("WHATSAPP_API_TOKEN", raising=False)
+    monkeypatch.delenv("WHATSAPP_PHONE_NUMBER_ID", raising=False)
+    monkeypatch.delenv("WHATSAPP_API_URL", raising=False)
+    assert notificaciones.enviar_whatsapp("+57 300 123 4567", "Mensaje de prueba") is False
+
+
+def test_enviar_whatsapp_meta_simulado(monkeypatch):
+    monkeypatch.setenv("WHATSAPP_API_TOKEN", "fake_token")
+    monkeypatch.setenv("WHATSAPP_PHONE_NUMBER_ID", "fake_phone_id")
+    monkeypatch.delenv("WHATSAPP_API_URL", raising=False)
+
+    peticiones = []
+
+    class MockResponse:
+        status = 200
+        def __enter__(self):
+            return self
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+    def mock_urlopen(req, timeout=10):
+        peticiones.append(req)
+        return MockResponse()
+
+    import urllib.request
+    monkeypatch.setattr(urllib.request, "urlopen", mock_urlopen)
+
+    exito = notificaciones.enviar_whatsapp("+57 300 123 4567", "Tu cita fue confirmada")
+    assert exito is True
+    assert len(peticiones) == 1
+    assert "graph.facebook.com/v18.0/fake_phone_id/messages" in peticiones[0].full_url
+
+
+def test_enviar_whatsapp_gateway_simulado(monkeypatch):
+    monkeypatch.setenv("WHATSAPP_API_URL", "https://api.whatsapp-gateway.local/send")
+    monkeypatch.setenv("WHATSAPP_API_TOKEN", "bearer_token")
+
+    peticiones = []
+
+    class MockResponse:
+        status = 200
+        def __enter__(self):
+            return self
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+
+    def mock_urlopen(req, timeout=10):
+        peticiones.append(req)
+        return MockResponse()
+
+    import urllib.request
+    monkeypatch.setattr(urllib.request, "urlopen", mock_urlopen)
+
+    exito = notificaciones.enviar_whatsapp("3001234567", "Alerta de cita")
+    assert exito is True
+    assert len(peticiones) == 1
+    assert peticiones[0].full_url == "https://api.whatsapp-gateway.local/send"
+
+
+def test_env_example_declara_las_variables_telegram_y_whatsapp():
+    import os
+    from conftest import BACKEND_DIR
+    with open(os.path.join(BACKEND_DIR, ".env.example"), encoding="utf-8") as f:
+        lineas = dict(l.split("=", 1) for l in f.read().splitlines() if "=" in l and not l.startswith("#"))
+    for variable in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "WHATSAPP_API_TOKEN", "WHATSAPP_PHONE_NUMBER_ID"):
+        assert variable in lineas, variable
+        assert lineas[variable] == ""
+

@@ -1,30 +1,30 @@
-# 💈 BarberShop Pro — Sistema de Gestión y Agendamiento de Citas
+# BarberShop Pro — Sistema de Gestion y Agendamiento de Citas
 
-Proyecto final para el curso de **Ingeniería de Software II** (Código 17934) — **Cotecnova**  
-Docente: **Felipe Gutiérrez Isaza**  
+Proyecto final para el curso de **Ingenieria de Software II** (Codigo 17934) — **Cotecnova**  
+Docente: **Felipe Gutierrez Isaza**  
 Periodo: **2026-2**
 
 ---
 
-## 👥 Equipo y Asignación de Roles
+## Equipo y Asignacion de Roles
 
 | Integrante | Rol en el Proyecto | Responsabilidad Principal |
 |---|---|---|
-| **Elizabeth Ramirez** | **Líder Técnico** | Coordina el alcance, la arquitectura, el modelo de datos y la integración continua del repositorio. |
-| **Sebastian Orozco** | **Responsable de Pruebas** | Diseña los casos de prueba formales, técnicas de partición/valores límite y coordina la automatización con `pytest`. |
-| **Juan David Osorio** | **Responsable de Calidad** | Revisa estándares de código, registra defectos/riesgos, propone acciones de mantenimiento y métricas de calidad. |
-| **Juan David Monroy** | **Responsable de Documentación** | Mantiene la especificación de requisitos, criterios de aceptación, actas, manuales y evidencias de entregas. |
+| **Elizabeth Ramirez** | **Lider Tecnico** | Coordina el alcance, la arquitectura, el modelo de datos y la integracion continua del repositorio. |
+| **Sebastian Orozco** | **Responsable de Pruebas** | Disena los casos de prueba formales, tecnicas de particion/valores limite y coordina la automatizacion con `pytest`. |
+| **Juan David Osorio** | **Responsable de Calidad** | Revisa estandares de codigo, registra defectos/riesgos, propone acciones de mantenimiento y metricas de calidad. |
+| **Juan David Monroy** | **Responsable de Documentacion** | Mantiene la especificacion de requisitos, criterios de aceptacion, actas, manuales y evidencias de entregas. |
 
 ---
 
-## 📌 Gestión del Proyecto en Trello
+## Gestion del Proyecto en Trello
 
-El seguimiento ágil del proyecto, la asignación de tarjetas y la trazabilidad de tareas hacia los commits del repositorio se gestionan a través de:
+El seguimiento agil del proyecto, la asignacion de tarjetas y la trazabilidad de tareas hacia los commits del repositorio se gestionan a traves de:
 * **Enlace al Tablero de Trello:** [Tablero Oficial - BarberShop Pro](https://trello.com/b/ENLACE_DEL_TABLERO_AQUI) *(Pendiente por actualizar enlace una vez invitado el docente)*
 
 ---
 
-## 🏛️ Estructura del Repositorio
+## Estructura del Repositorio
 
 El repositorio respeta estrictamente los lineamientos solicitados para el curso:
 
@@ -63,18 +63,43 @@ El sistema cuenta con una especificacion de 10 diagramas modelados en UML 2.5 y 
 
 ---
 
-## 🚀 Stack Tecnológico
+## Stack Tecnologico
 
-| Capa | Tecnologías Seleccionadas |
+| Capa | Tecnologias Seleccionadas |
 |---|---|
 | **Backend** | Python 3.11+ / 3.13, FastAPI, Pydantic v2, Uvicorn, SQLAlchemy 2.0 |
 | **Frontend** | React 18, Vite, Tailwind CSS, Lucide Icons |
-| **Base de Datos** | MySQL 8 / MariaDB (Producción/Dev) y SQLite (Entorno de pruebas automatizadas) |
+| **Base de Datos** | MySQL 8 / MariaDB (Produccion/Dev) y SQLite (Entorno de pruebas automatizadas) |
+| **Notificaciones** | SMTP (Correo transaccional), Telegram Bot API y WhatsApp (Cloud API / Gateway REST) |
 | **Testing / Calidad**| `pytest`, `pytest-asyncio`, `httpx` (TestClient de FastAPI) |
 
 ---
 
-## ⚡ Guía de Instalación y Ejecución Local
+## Sistema de Notificaciones Multicanal
+
+La aplicacion incluye un modulo de notificaciones multicanal asincrono (`notificaciones.py`) que no bloquea las solicitudes del usuario:
+
+1. **Correo Electronico (SMTP):** Envios transaccionales con plantillas HTML responsivas y accesibles.
+2. **Telegram:** Alertas instantaneas para administracion y barberos ante reservas, cancelaciones o reprogramaciones a traves de Telegram Bot API.
+3. **WhatsApp:** Notificaciones automatizadas mediante Meta WhatsApp Cloud API o gateways REST (Evolution API, UltraMsg, Baileys), mas boton interactivo directo Click-to-Chat (`wa.me`) en el modal de confirmacion del frontend.
+
+### Variables de Configuracion (.env)
+
+```ini
+# Notificaciones por Telegram (opcional)
+TELEGRAM_BOT_TOKEN=tu_token_de_bot_father
+TELEGRAM_CHAT_ID=tu_chat_id_o_grupo
+
+# Notificaciones por WhatsApp (opcional)
+WHATSAPP_API_TOKEN=tu_token_de_acceso_meta
+WHATSAPP_PHONE_NUMBER_ID=tu_phone_number_id
+WHATSAPP_API_URL=
+WHATSAPP_ADMIN_PHONE=573001234567
+```
+
+---
+
+## Guia de Instalacion y Ejecucion Local
 
 ### Prerrequisitos
 * Python 3.11 o superior instalado (`python --version`)
@@ -83,7 +108,7 @@ El sistema cuenta con una especificacion de 10 diagramas modelados en UML 2.5 y 
 
 ---
 
-### 1. Configuración del Backend (FastAPI)
+### 1. Configuracion del Backend (FastAPI)
 
 1. Abrir una terminal y navegar al directorio del backend:
    ```bash
@@ -112,29 +137,29 @@ El sistema cuenta con una especificacion de 10 diagramas modelados en UML 2.5 y 
      ```bash
      cp .env.example .env
      ```
-   *(Ajustar las credenciales en caso de usar un servidor MySQL local, o usar la cadena de SQLite para pruebas rápidas).*
+   *(Ajustar las credenciales segun el entorno local o pruebas).*
 
 5. Iniciar el servidor de desarrollo:
    ```bash
    uvicorn main:app --host 127.0.0.1 --port 8000 --reload
    ```
    * **API Base:** `http://127.0.0.1:8000`
-   * **Documentación interactiva Swagger / OpenAPI:** `http://127.0.0.1:8000/docs`
+   * **Documentacion interactiva Swagger / OpenAPI:** `http://127.0.0.1:8000/docs`
 
 ---
 
-### 2. Ejecución de Pruebas Automatizadas
+### 2. Ejecucion de Pruebas Automatizadas
 
-Para validar los casos de prueba unitarios y de lógica de negocio (como detección de choques de horario y cálculo de disponibilidad):
+Para validar los casos de prueba unitarios y de logica de negocio:
 
 ```bash
-# Estando en la raíz del proyecto o en src/backend con el entorno virtual activo:
+# Estando en la raiz del proyecto o en src/backend con el entorno virtual activo:
 pytest tests/ -v
 ```
 
 ---
 
-### 3. Configuración del Frontend (React + Vite)
+### 3. Configuracion del Frontend (React + Vite)
 
 1. En una nueva terminal, navegar al directorio del frontend:
    ```bash
@@ -150,11 +175,11 @@ pytest tests/ -v
    ```bash
    npm run dev
    ```
-   * **Aplicación Web:** `http://localhost:5173`
+   * **Aplicacion Web:** `http://localhost:5173`
 
 ---
 
-## 🏷️ Historial de Entregas y Tags
+## Historial de Entregas y Tags
 
 * **Seguimiento 1:** `git tag entrega-s1`
 * **Seguimiento 2:** `git tag entrega-s2`

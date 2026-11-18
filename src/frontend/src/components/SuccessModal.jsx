@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, XCircle, Copy, Check, Calendar, Clock, User, Scissors, Wallet, Mail } from 'lucide-react';
+import { CheckCircle2, XCircle, Copy, Check, Calendar, Clock, User, Scissors, Wallet, Mail, MessageCircle } from 'lucide-react';
 import { claseEstado, formatearFecha, formatearHora, formatearPrecio, TEXTOS_POLITICAS } from '../formato';
 
 // Mensajes según la operación realizada. La información mostrada sale de la CitaResponse real del backend.
@@ -144,12 +144,27 @@ export default function SuccessModal({ cita, tipo = 'agendada', onClose }) {
           </p>
         )}
 
-        <button
-          onClick={onClose}
-          className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-amber-500/20"
-        >
-          {textos.boton}
-        </button>
+        <div className="flex flex-col gap-2.5">
+          {tipo !== 'cancelada' && (
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(
+                `*BarberShop Pro - Comprobante de Cita*\nCódigo de reserva: ${cita.codigo_reserva}\nBarbero: ${cita.barbero?.nombre || 'Barbero'}\nFecha: ${formatearFecha(cita.fecha)}\nHorario: ${formatearHora(cita.hora_inicio)} - ${formatearHora(cita.hora_fin)}\nTotal: ${formatearPrecio(cita.total)}`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 px-4 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm text-center"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Compartir en WhatsApp
+            </a>
+          )}
+          <button
+            onClick={onClose}
+            className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-amber-500/20"
+          >
+            {textos.boton}
+          </button>
+        </div>
       </div>
     </div>
   );
