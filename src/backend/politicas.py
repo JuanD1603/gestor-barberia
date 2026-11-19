@@ -17,6 +17,8 @@ FRANJAS = {
     "Mañana": (datetime.time(6, 0), datetime.time(12, 0)),
     "Tarde": (datetime.time(12, 0), datetime.time(18, 0)),
     "Noche": (datetime.time(18, 0), datetime.time(22, 0)),
+    # Franja sintética que muestra todos los horarios del día sin filtrar por turno
+    "Todo": (datetime.time(0, 0), datetime.time(23, 59)),
 }
 
 # PN-04 y PN-05: anticipación mínima para cancelar y para reprogramar una cita.

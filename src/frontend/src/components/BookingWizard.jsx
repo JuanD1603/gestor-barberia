@@ -4,7 +4,6 @@ import CatalogoCortesProductos from './CatalogoCortesProductos';
 import { api } from '../api';
 import { useAuth } from '../AuthContext';
 import {
-  FRANJAS,
   INTERVALO_MINUTOS,
   TEXTOS_POLITICAS,
   formatearFecha,
@@ -40,7 +39,8 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
   const [serviciosIds, setServiciosIds] = useState([]);
   const [selectedBarbero, setSelectedBarbero] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => sumarDias(hoyColombia(), 1));
-  const [franja, setFranja] = useState('');
+  // Franja fija "Todo": muestra todos los turnos del día sin filtrar por mañana/tarde/noche
+  const franja = 'Todo';
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [notas, setNotas] = useState('');
 
@@ -93,12 +93,13 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
     };
   }, [serviciosIds, cargarCatalogo]);
 
-  // Horarios libres del barbero para la fecha, franja y duración total (RF-18). Solo se piden en el paso 3.
+  // Horarios libres del barbero para la fecha y duración total (RF-18). Solo se piden en el paso 3.
+  // La franja es siempre "Todo" para mostrar todos los turnos disponibles del día.
   useEffect(() => {
     if (step !== 3) return undefined;
     setSelectedSlot(null);
     setErrorSlots('');
-    if (!selectedBarbero || !selectedDate || !franja || serviciosIds.length === 0) {
+    if (!selectedBarbero || !selectedDate || serviciosIds.length === 0) {
       setSlots([]);
       return undefined;
     }
@@ -127,7 +128,6 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
     setStep(1);
     setServiciosIds([]);
     setSelectedBarbero(null);
-    setFranja('');
     setSelectedSlot(null);
     setNotas('');
     setLimiteAlcanzado(false);
@@ -439,74 +439,46 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
         </div>
       )}
 
-      {/* ================= PASO 3: FECHA, FRANJA Y HORARIOS ================= */}
+      {/* ================= PASO 3: FECHA Y HORARIOS ================= */}
       {step === 3 && (
         <div>
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-white">Fecha y Horario</h2>
             <p className="text-slate-400 text-sm mt-1">
-              Los horarios se consultan en vivo según la duración total de tus servicios ({duracionTotal} min) y se
-              ofrecen cada {INTERVALO_MINUTOS} minutos.
+              Todos los turnos disponibles con {selectedBarbero?.nombre} se muestran por horario ({duracionTotal} min por cita, cada {INTERVALO_MINUTOS} min).
             </p>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="cita-fecha" className="block text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">
-                Seleccionar Fecha
-              </label>
-              <input
-                id="cita-fecha"
-                type="date"
-                value={selectedDate}
-                min={hoyColombia()}
-                onChange={(e) => cambiarFecha(e.target.value)}
-                className="w-full sm:w-64 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-medium focus:border-amber-500 focus:outline-none"
-              />
-            </div>
-            <div>
-              <span className="block text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">
-                Franja del Día
-              </span>
-              <div className="flex gap-2" role="group" aria-label="Franja del día">
-                {FRANJAS.map((f) => (
-                  <button
-                    type="button"
-                    key={f}
-                    onClick={() => setFranja(f)}
-                    aria-pressed={franja === f}
-                    className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition ${
-                      franja === f
-                        ? 'bg-amber-500 text-slate-950 font-bold border-amber-500 shadow-md shadow-amber-500/20'
-                        : 'bg-slate-950 border-slate-800 text-slate-200 hover:border-slate-700'
-                    }`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Selector de fecha */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-6">
+            <label htmlFor="cita-fecha" className="block text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">
+              Seleccionar Fecha
+            </label>
+            <input
+              id="cita-fecha"
+              type="date"
+              value={selectedDate}
+              min={hoyColombia()}
+              onChange={(e) => cambiarFecha(e.target.value)}
+              className="w-full sm:w-72 px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-medium focus:border-amber-500 focus:outline-none"
+            />
           </div>
 
+          {/* Turnos disponibles — se cargan automáticamente al entrar al paso */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
             <h3 className="font-semibold text-sm text-slate-300 mb-4 flex items-center gap-2">
               <Clock className="w-4 h-4 text-amber-400" />
-              Turnos Disponibles con {selectedBarbero?.nombre} el {formatearFecha(selectedDate)}
-              {franja ? ` (${franja}):` : ':'}
+              Turnos disponibles el {formatearFecha(selectedDate)}
             </h3>
 
             {errorSlots && <Alerta tipo="error" className="mb-4">{errorSlots}</Alerta>}
 
-            {!franja ? (
-              <div className="py-8 text-center text-slate-500 text-sm">
-                Elige una franja del día para ver los horarios disponibles.
-              </div>
-            ) : loadingSlots ? (
+            {loadingSlots ? (
               <div className="py-8 text-center text-slate-400 text-sm">Consultando disponibilidad en tiempo real...</div>
             ) : horariosLibres.length === 0 ? (
               !errorSlots && (
                 <div className="py-8 text-center text-slate-500 text-sm">
-                  No hay horarios disponibles para esta fecha y franja. Prueba con otra franja u otro día.
+                  No hay horarios disponibles para esta fecha. Prueba con otro dia.
                 </div>
               )
             ) : (
