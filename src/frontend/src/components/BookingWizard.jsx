@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Scissors, User, Calendar as CalendarIcon, Clock, Check, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Scissors, User, Calendar as CalendarIcon, Clock, Check, ArrowRight, ArrowLeft, BookOpen } from 'lucide-react';
+import CatalogoCortesProductos from './CatalogoCortesProductos';
 import { api } from '../api';
 import { useAuth } from '../AuthContext';
 import {
@@ -18,6 +19,8 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
   const { usuario } = useAuth();
 
   const [step, setStep] = useState(1);
+  // Tab activa dentro del paso 2: 'servicios' o 'catalogo'
+  const [tabPaso2, setTabPaso2] = useState('servicios');
   const [servicios, setServicios] = useState([]);
   const [barberos, setBarberos] = useState([]);
   const [loadingCatalogo, setLoadingCatalogo] = useState(true);
@@ -293,7 +296,7 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
         </div>
       )}
 
-      {/* ================= PASO 2: SERVICIOS ================= */}
+      {/* ================= PASO 2: SERVICIOS + CATALOGO ================= */}
       {step === 2 && (
         <div>
           <div className="text-center mb-6">
@@ -303,69 +306,120 @@ export default function BookingWizard({ onBookingSuccess, onVerMisCitas }) {
             </p>
           </div>
 
-          {loadingCatalogo ? (
-            <div className="py-12 text-center text-slate-400 text-sm">Cargando servicios...</div>
-          ) : servicios.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 text-sm">No hay servicios disponibles por el momento.</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {servicios.map((s) => {
-                const selected = serviciosIds.includes(s.id);
-                return (
-                  <button
-                    type="button"
-                    key={s.id}
-                    onClick={() => alternarServicio(s.id)}
-                    aria-pressed={selected}
-                    className={`p-5 rounded-2xl border cursor-pointer transition relative flex flex-col justify-between text-left ${
-                      selected
-                        ? 'bg-amber-500/10 border-amber-500 shadow-lg shadow-amber-500/10'
-                        : 'bg-slate-900 border-slate-800 hover:border-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between w-full gap-3">
-                      <h3 className="font-bold text-lg text-white">{s.nombre}</h3>
-                      <span className="text-amber-400 font-bold text-lg">{formatearPrecio(s.precio)}</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400 w-full">
-                      <span className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-amber-400" /> {s.duracion_minutos} minutos
-                      </span>
-                      <span className={`font-semibold ${selected ? 'text-amber-400' : 'text-slate-500'}`}>
-                        {selected ? 'Seleccionado ✓' : 'Elegir'}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+          {/* Tabs de alternancia entre servicios y catálogo */}
+          <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 mb-6" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tabPaso2 === 'servicios'}
+              onClick={() => setTabPaso2('servicios')}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition ${
+                tabPaso2 === 'servicios'
+                  ? 'bg-amber-500 text-slate-950'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              }`}
+            >
+              <Scissors className="w-4 h-4" />
+              Servicios para Agendar
+              {serviciosIds.length > 0 && (
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                    tabPaso2 === 'servicios'
+                      ? 'bg-slate-950/20 text-slate-950'
+                      : 'bg-amber-500/20 text-amber-400'
+                  }`}
+                >
+                  {serviciosIds.length}
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tabPaso2 === 'catalogo'}
+              onClick={() => setTabPaso2('catalogo')}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition ${
+                tabPaso2 === 'catalogo'
+                  ? 'bg-amber-500 text-slate-950'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              Catalogo de Inspiracion
+            </button>
+          </div>
+
+          {/* Tab: Servicios para agendar */}
+          {tabPaso2 === 'servicios' && (
+            <>
+              {loadingCatalogo ? (
+                <div className="py-12 text-center text-slate-400 text-sm">Cargando servicios...</div>
+              ) : servicios.length === 0 ? (
+                <div className="py-12 text-center text-slate-500 text-sm">No hay servicios disponibles por el momento.</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {servicios.map((s) => {
+                    const selected = serviciosIds.includes(s.id);
+                    return (
+                      <button
+                        type="button"
+                        key={s.id}
+                        onClick={() => alternarServicio(s.id)}
+                        aria-pressed={selected}
+                        className={`p-5 rounded-2xl border cursor-pointer transition relative flex flex-col justify-between text-left ${
+                          selected
+                            ? 'bg-amber-500/10 border-amber-500 shadow-lg shadow-amber-500/10'
+                            : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between w-full gap-3">
+                          <h3 className="font-bold text-lg text-white">{s.nombre}</h3>
+                          <span className="text-amber-400 font-bold text-lg">{formatearPrecio(s.precio)}</span>
+                        </div>
+                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400 w-full">
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-amber-400" /> {s.duracion_minutos} minutos
+                          </span>
+                          <span className={`font-semibold ${selected ? 'text-amber-400' : 'text-slate-500'}`}>
+                            {selected ? 'Seleccionado' : 'Elegir'}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Resumen calculado por el backend (RF-15) */}
+              <div className="mt-6 bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                <Alerta tipo="error" className="mb-3">{errorResumen}</Alerta>
+                <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                  <span className="text-slate-400">
+                    {serviciosIds.length === 0
+                      ? 'Elige al menos un servicio para continuar.'
+                      : `${serviciosIds.length} ${serviciosIds.length === 1 ? 'servicio elegido' : 'servicios elegidos'}`}
+                  </span>
+                  <div className="flex items-center gap-6">
+                    <span className="text-slate-400">
+                      Duracion total:{' '}
+                      <strong className="text-white">
+                        {serviciosIds.length === 0 ? '0' : duracionTotal ?? '...'} min
+                      </strong>
+                    </span>
+                    <span className="text-slate-400">
+                      Total:{' '}
+                      <strong className="text-emerald-400 text-lg">
+                        {serviciosIds.length === 0 ? '$0' : resumen ? formatearPrecio(resumen.total) : '...'}
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
-          {/* Resumen calculado por el backend (RF-15) */}
-          <div className="mt-6 bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <Alerta tipo="error" className="mb-3">{errorResumen}</Alerta>
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-              <span className="text-slate-400">
-                {serviciosIds.length === 0
-                  ? 'Elige al menos un servicio para continuar.'
-                  : `${serviciosIds.length} ${serviciosIds.length === 1 ? 'servicio elegido' : 'servicios elegidos'}`}
-              </span>
-              <div className="flex items-center gap-6">
-                <span className="text-slate-400">
-                  Duración total:{' '}
-                  <strong className="text-white">
-                    {serviciosIds.length === 0 ? '0' : duracionTotal ?? '...'} min
-                  </strong>
-                </span>
-                <span className="text-slate-400">
-                  Total:{' '}
-                  <strong className="text-emerald-400 text-lg">
-                    {serviciosIds.length === 0 ? '$0' : resumen ? formatearPrecio(resumen.total) : '...'}
-                  </strong>
-                </span>
-              </div>
-            </div>
-          </div>
+          {/* Tab: Catalogo de inspiracion */}
+          {tabPaso2 === 'catalogo' && <CatalogoCortesProductos />}
 
           <div className="mt-8 flex justify-between">
             <button
