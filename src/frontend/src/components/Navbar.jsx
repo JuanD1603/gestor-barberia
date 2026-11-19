@@ -63,21 +63,13 @@ export default function Navbar({ activeTab, setActiveTab, vistaPublica = 'bienve
                 <span>Ver Productos</span>
               </button>
 
-              {vistaPublica !== 'bienvenida' ? (
+              {vistaPublica !== 'bienvenida' && (
                 <button
                   type="button"
                   onClick={() => onCambiarVistaPublica('bienvenida')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800 transition"
+                  className="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800 transition cursor-pointer"
                 >
                   Inicio
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => onCambiarVistaPublica('login')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition"
-                >
-                  Iniciar Sesión
                 </button>
               )}
             </div>
