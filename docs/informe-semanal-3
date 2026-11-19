@@ -172,3 +172,4 @@ En la Semana 3 se documentó y subsanó el siguiente defecto crítico:
 2. **Robustez y Respaldo de Pruebas:** Con más de 283 pruebas unitarias y de integración pasando con éxito en `pytest`, el sistema garantiza cero sobreventa de turnos, protección criptográfica de contraseñas mediante **Argon2id** y control estricto de accesos **RBAC**.
 3. **Calidad y Mantenibilidad:** La aplicación se encuentra completamente documentada en sus 10 diagramas UML 2.5, con su informe de calidad v2.1 al día y un historial claro de defectos prevenidos y corregidos.
 4. **Listo para Producción:** El sistema cuenta con scripts automatizados de puesta en marcha para Windows (`iniciar-backend.bat` e `iniciar-frontend.bat`), guía institucional en `README.md` y soporte multicanal moderno para clientes y barberos.
+
