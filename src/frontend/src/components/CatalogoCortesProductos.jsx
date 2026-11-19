@@ -276,8 +276,8 @@ const TABS = [
 // Componente principal exportado
 // ---------------------------------------------------------------------------
 
-export default function CatalogoCortesProductos() {
-  const [tabActiva, setTabActiva] = useState('cortes');
+export default function CatalogoCortesProductos({ tabInicial = 'cortes' } = {}) {
+  const [tabActiva, setTabActiva] = useState(tabInicial);
 
   const renderContenido = () => {
     if (tabActiva === 'cortes') {
