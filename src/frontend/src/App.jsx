@@ -56,7 +56,7 @@ function AppContent() {
         onCambiarVistaPublica={setVistaPublica}
       />
 
-      <main className={`flex-1 ${!usuario && vistaPublica !== 'bienvenida' ? 'flex flex-col justify-center py-2 sm:py-4' : 'pb-16'}`}>
+      <main className={`flex-1 ${!usuario && vistaPublica === 'bienvenida' ? 'flex flex-col' : !usuario ? 'flex flex-col justify-center py-2 sm:py-4' : 'pb-16'}`}>
         {tokenReset !== null ? (
           <ResetPasswordPage token={tokenReset} onTerminar={terminarRestablecimiento} />
         ) : !usuario ? (

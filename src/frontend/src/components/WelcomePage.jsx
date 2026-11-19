@@ -1,166 +1,123 @@
 import React from 'react';
-import { Scissors, Calendar, Clock, User, ShieldCheck, MessageCircle, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { Scissors, Phone, MapPin, Clock, ArrowRight, UserPlus, Instagram, Facebook } from 'lucide-react';
+import heroBg from '../assets/barber-bg.jpg';
 
 export default function WelcomePage({ onIniciarSesion, onRegistrarse }) {
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-6 sm:py-10 animate-fade-in space-y-12">
-      {/* Sección Hero */}
-      <section className="text-center space-y-6">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold tracking-wide uppercase">
-          <Scissors className="w-3.5 h-3.5 rotate-45" />
-          <span>Barbería Profesional y Agendamiento Digital</span>
-        </div>
+    <div className="relative min-h-[calc(100vh-4rem)] flex flex-col justify-between overflow-hidden animate-fade-in bg-slate-950">
+      {/* Imagen de fondo en blanco y negro */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src={heroBg}
+          alt="BarberShop Pro Background"
+          className="w-full h-full object-cover object-center sm:object-right-top filter brightness-90 contrast-110"
+        />
+        {/* Capas de gradiente para contraste y legibilidad óptima */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/85 to-slate-950/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/60" />
+        <div className="absolute inset-0 bg-black/35" />
+      </div>
 
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight max-w-3xl mx-auto leading-tight">
-          Tu estilo impecable, tu turno reservado en <span className="text-amber-400">segundos</span>.
-        </h1>
-
-        <p className="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-          Agenda tus citas con los mejores barberos, elige múltiples servicios personalizados y recibe notificaciones
-          automáticas por correo electrónico, WhatsApp y Telegram.
-        </p>
-
-        {/* Botones de acción principales */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-          <button
-            type="button"
-            onClick={onIniciarSesion}
-            className="w-full sm:w-auto px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 text-base"
-          >
-            <span>Iniciar Sesión</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={onRegistrarse}
-            className="w-full sm:w-auto px-8 py-3.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold rounded-xl transition flex items-center justify-center gap-2 text-base"
-          >
-            <span>Crear Cuenta Nueva</span>
-          </button>
-        </div>
-
-        {/* Indicadores clave */}
-        <div className="pt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto text-left">
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 flex-shrink-0">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Disponibilidad</p>
-              <p className="text-sm font-bold text-white">Turnos cada 15 min</p>
-            </div>
+      {/* Contenido Principal (Hero) */}
+      <section className="relative z-10 flex-1 flex flex-col justify-center max-w-7xl mx-auto px-6 sm:px-12 py-12 sm:py-20 w-full">
+        <div className="max-w-2xl space-y-6">
+          {/* Badge superior sutil */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold tracking-wider uppercase backdrop-blur-sm">
+            <Scissors className="w-3.5 h-3.5 rotate-45 text-amber-400" />
+            <span>BarberShop Pro • Cartago, Valle</span>
           </div>
 
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 flex-shrink-0">
-              <MessageCircle className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Alertas en vivo</p>
-              <p className="text-sm font-bold text-white">Email, WhatsApp y Telegram</p>
-            </div>
-          </div>
+          {/* Frase principal grande e impactante */}
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
+            Hacemos de tu estilo una <span className="text-amber-400">declaración</span>.
+          </h1>
 
-          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 flex-shrink-0">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Garantía de servicio</p>
-              <p className="text-sm font-bold text-white">Sin esperas ni solapes</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Sección de Beneficios y Servicios */}
-      <section className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Experiencia de Agendamiento Simplificada
-          </h2>
-          <p className="text-slate-400 text-sm mt-1">
-            Diseñado para que reserves tu corte o arreglo en solo 4 pasos sin complicaciones.
+          {/* Descripción limpia y concisa */}
+          <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-xl">
+            Cortes de alta precisión, cuidado de barba y barbería clásica. Reserva tu cita en segundos con tu barbero favorito y sin filas de espera.
           </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <User className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-white text-base">1. Elige tu Barbero</h3>
-              <p className="text-slate-400 text-xs leading-relaxed">
-                Selecciona al profesional de tu preferencia para conocer su disponibilidad exacta en agenda.
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Scissors className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-white text-base">2. Servicios a tu Medida</h3>
-              <p className="text-slate-400 text-xs leading-relaxed">
-                Corte clásico, degradados, barba spa o combos. Puedes elegir uno o varios para una misma cita.
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-white text-base">3. Fecha y Franja</h3>
-              <p className="text-slate-400 text-xs leading-relaxed">
-                Consulta los turnos disponibles por mañana, tarde o noche con cálculo de duración en tiempo real.
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                <CheckCircle2 className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-white text-base">4. Confirmación Rápida</h3>
-              <p className="text-slate-400 text-xs leading-relaxed">
-                Recibe tu código de reserva único, detalles del costo y opción para compartir en WhatsApp.
-              </p>
-            </div>
+          {/* Botones de acción */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+            <button
+              type="button"
+              onClick={onIniciarSesion}
+              className="px-8 py-3.5 bg-amber-500 hover:bg-amber-400 active:scale-[0.99] text-slate-950 font-bold rounded-xl transition-all duration-200 shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2.5 text-base group cursor-pointer"
+            >
+              <span>Iniciar Sesión</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+            <button
+              type="button"
+              onClick={onRegistrarse}
+              className="px-8 py-3.5 bg-slate-900/80 hover:bg-slate-800 hover:text-white active:scale-[0.99] text-slate-200 border border-slate-700 font-semibold rounded-xl transition-all duration-200 backdrop-blur-md flex items-center justify-center gap-2.5 text-base cursor-pointer"
+            >
+              <UserPlus className="w-4 h-4 text-amber-400" />
+              <span>Crear Cuenta</span>
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Banner de Invitación Final */}
-      <section className="bg-slate-900/80 border border-amber-500/30 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-xl shadow-slate-950/50">
-        <h3 className="text-xl sm:text-2xl font-bold text-white">
-          ¿Listo para reservar tu próximo corte?
-        </h3>
-        <p className="text-slate-400 text-sm max-w-xl mx-auto">
-          Inicia sesión con tu correo o crea tu cuenta gratuita para acceder a tu historial de citas y gestionar tus turnos.
-        </p>
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <button
-            type="button"
-            onClick={onIniciarSesion}
-            className="w-full sm:w-auto px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition shadow-md shadow-amber-500/20 text-sm"
-          >
-            Ingresar al Sistema
-          </button>
-          <button
-            type="button"
-            onClick={onRegistrarse}
-            className="w-full sm:w-auto px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold rounded-xl transition text-sm"
-          >
-            Registrarme como Cliente
-          </button>
+      {/* Barra Inferior de Información (Teléfono, Dirección, Horario y Redes) */}
+      <footer className="relative z-10 border-t border-slate-800/80 bg-slate-950/85 backdrop-blur-md w-full">
+        <div className="max-w-7xl mx-auto px-6 sm:px-12 py-5 sm:py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-center">
+          {/* Teléfono */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0">
+              <Phone className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Atención & Reservas</p>
+              <p className="text-sm font-bold text-white tracking-wide">+57 (314) 789-2045</p>
+              <p className="text-[11px] text-slate-500">Llamadas y WhatsApp</p>
+            </div>
+          </div>
+
+          {/* Dirección en Cartago, Valle */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Ubicación</p>
+              <p className="text-sm font-bold text-white tracking-wide">Cra. 4 # 12-48, Centro</p>
+              <p className="text-[11px] text-slate-500">Cartago, Valle del Cauca</p>
+            </div>
+          </div>
+
+          {/* Horario Lunes a Viernes */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 flex-shrink-0">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Horario de Apertura</p>
+              <p className="text-sm font-bold text-white tracking-wide">Lunes a Viernes</p>
+              <p className="text-[11px] text-slate-500">8:00 AM – 8:00 PM (Sáb. hasta 7 PM)</p>
+            </div>
+          </div>
+
+          {/* Redes Sociales y Marca */}
+          <div className="flex items-center sm:justify-start lg:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+            <span className="text-xs text-slate-400 font-medium hidden lg:inline">Síguenos:</span>
+            <div className="flex items-center gap-2">
+              <span
+                title="Instagram @barbershop.pro"
+                className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-500/40 text-slate-400 hover:text-amber-400 flex items-center justify-center transition cursor-pointer"
+              >
+                <Instagram className="w-4 h-4" />
+              </span>
+              <span
+                title="Facebook BarberShop Pro"
+                className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-500/40 text-slate-400 hover:text-amber-400 flex items-center justify-center transition cursor-pointer"
+              >
+                <Facebook className="w-4 h-4" />
+              </span>
+            </div>
+          </div>
         </div>
-      </section>
+      </footer>
     </div>
   );
 }
-
