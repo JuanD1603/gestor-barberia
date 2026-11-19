@@ -124,7 +124,7 @@ function Login({ emailInicial, aviso, onCambiarVista, onVolverInicio }) {
 // ---------------------------------------------------------------------------
 // Registro de clientes (RF-01) con aviso de privacidad y autorización (RNF-06)
 // ---------------------------------------------------------------------------
-function Registro({ onCambiarVista, onRegistrado }) {
+function Registro({ onCambiarVista, onRegistrado, onVolverInicio }) {
   const [form, setForm] = useState({ nombre: '', telefono: '', email: '', password: '' });
   const [acepta, setAcepta] = useState(false);
   const [enviando, setEnviando] = useState(false);

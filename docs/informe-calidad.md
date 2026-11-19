@@ -7,7 +7,7 @@
 **Responsable de Pruebas:** Sebastian Orozco  
 **Líder Técnico:** Elizabeth Ramirez  
 **Documentación:** Juan David Monroy  
-**Versión del Documento:** 2.0 (Seguimiento 2 — Versión 1.1 del Sistema)
+**Versión del Documento:** 2.1 (Entrega Final — Versión 1.1 del Sistema)
 
 ---
 
@@ -99,12 +99,23 @@ Desde el área de **Aseguramiento de Calidad (QA)**, se lideró una auditoría e
 
 ---
 
+### 🐛 Defecto DEF-007: Fallo fatal de renderizado en formulario de registro de clientes por variable no declarada
+* **Etapa:** Entrega Final (v1.1)
+* **Severidad:** Crítica (Bloqueo total de la funcionalidad RF-01)
+* **Módulo afectado:** `src/frontend/src/components/AuthPage.jsx` (`Registro`)
+* **Descripción del problema:** Al hacer clic en "Crear cuenta nueva" o "Regístrate", la aplicación web colapsaba mostrando una pantalla completamente en negro.
+* **Causa raíz:** Durante la integración de la pantalla de bienvenida previa al login con botón de retorno (`onVolverInicio`), el componente `Registro` intentaba evaluar `{onVolverInicio && ...}` sin haber declarado ni destructurado dicha prop en la firma de la función `function Registro({ onCambiarVista, onRegistrado })`. Esto provocaba un `ReferenceError: onVolverInicio is not defined` en tiempo de ejecución, lo que causaba que React desmontara por completo el árbol de componentes.
+* **Solución aplicada:** Se aplicó **mantenimiento correctivo** incorporando el prop `onVolverInicio` en la firma de la función `Registro({ onCambiarVista, onRegistrado, onVolverInicio })`.
+* **Verificación:** Pruebas exploratorias de interfaz satisfactorias, suite unitaria frontend limpia (22 de 22 pruebas pasando) y compilación de producción con Vite (`npm run build`) exitosa.
+
+---
+
 ## 4. Acciones de Mantenimiento de Software (Clasificación ISO/IEC 14764)
 
 Para dar cumplimiento formal al criterio de **Mantenimiento** evaluado en la Clase 9, se documentan las cuatro categorías de mantenimiento aplicadas al sistema:
 
 ### 1. Mantenimiento Correctivo
-* Reparación de los defectos `DEF-001` (solapamiento), `DEF-004` (configuración SMTP), `DEF-005` (regresión de endpoints protegidos) y `DEF-006` (formato de horas).
+* Reparación de los defectos `DEF-001` (solapamiento), `DEF-004` (configuración SMTP), `DEF-005` (regresión de endpoints protegidos), `DEF-006` (formato de horas) y `DEF-007` (ReferenceError de renderizado en formulario de registro del frontend).
 * Corrección de aserciones de tolerancia temporal en `tests/test_agendamiento.py` para absorber la variabilidad de I/O en sistemas operativos Windows.
 
 ### 2. Mantenimiento Adaptativo
