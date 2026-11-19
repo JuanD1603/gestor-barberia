@@ -1,0 +1,42 @@
+flowchart TB
+    subgraph ClientNode ["Dispositivo de Usuario (Cliente / Barbero / Administrador)"]
+        Browser["Navegador Web Moderno (Chrome, Edge, Firefox, Safari)"]
+        SPA_Artifact["Artefacto SPA Ejecutable (HTML5, JS Bundles, CSS)"]
+        Browser --- SPA_Artifact
+    end
+
+    subgraph HostServer ["Servidor de Alojamiento y Ejecucion"]
+        subgraph WebServerNode ["Servidor Web Frontend"]
+            WebServer["Vite Dev Server (Dev) / Servidor Nginx (Prod)"]
+            PortFrontend["Puerto HTTP: 5173 / 80"]
+            WebServer --- PortFrontend
+        end
+
+        subgraph AppServerNode ["Servidor de Aplicaciones Backend (Python Runtime)"]
+            ASGIRunner["Uvicorn ASGI Server"]
+            FastAPIApp["Aplicacion BarberShop Pro Backend (FastAPI)"]
+            PythonEnv["Entorno Virtual Python (venv - Python 3.11+)"]
+            PortBackend["Puerto HTTP REST: 8000"]
+            
+            ASGIRunner --- FastAPIApp
+            FastAPIApp --- PythonEnv
+            ASGIRunner --- PortBackend
+        end
+
+        subgraph StorageNode ["Servidor de Persistencia de Datos"]
+            DatabaseEngine[("Motor de Base de Datos - SQLite / MySQL 8.0")]
+            DBFile["Archivo de Datos: barberia.db (SQLite)"]
+            DatabaseEngine --- DBFile
+        end
+    end
+
+    subgraph ExternalCloud ["Servicios en la Nube"]
+        SMTPServer["Servidor SMTP Externo (Notificaciones por Correo)"]
+    end
+
+    %% Conexiones de red y protocolos
+    SPA_Artifact -->|HTTP / HTTPS - Solicitud de Assets| PortFrontend
+    SPA_Artifact -->|HTTP REST JSON / Bearer Auth - API Calls| PortBackend
+    FastAPIApp -->|SQLAlchemy Core / Dialecto SQLite / MySQL| DatabaseEngine
+    FastAPIApp -.->|SMTP / STARTTLS - Puerto 587| SMTPServer
+

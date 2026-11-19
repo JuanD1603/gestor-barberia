@@ -1,0 +1,146 @@
+classDiagram
+    direction TB
+
+    %% Entidades de Dominio
+    class Usuario {
+        +int id
+        +string nombre
+        +string telefono
+        +string email
+        +string password_hash
+        +string rol
+        +date suspendido_hasta
+        +bool activo
+        +esta_suspendido(fecha) bool
+        +validar_password(password) bool
+    }
+
+    class Barbero {
+        +int id
+        +int usuario_id
+        +string foto_url
+        +bool activo
+        +nombre() string
+        +email() string
+        +telefono() string
+    }
+
+    class Servicio {
+        +int id
+        +string nombre
+        +int duracion_minutos
+        +decimal precio
+        +bool activo
+    }
+
+    class Cita {
+        +int id
+        +string codigo_reserva
+        +int cliente_id
+        +int barbero_id
+        +date fecha
+        +time hora_inicio
+        +time hora_fin
+        +string estado
+        +decimal total
+        +bool reprogramada
+        +string notas
+        +datetime creada_el
+        +calcular_total() decimal
+        +puede_cancelarse(ahora) bool
+        +puede_reprogramarse(ahora) bool
+    }
+
+    class CitaServicio {
+        +int id
+        +int cita_id
+        +int servicio_id
+        +decimal precio_aplicado
+        +int duracion_minutos
+    }
+
+    class Disponibilidad {
+        +int id
+        +int barbero_id
+        +int dia_semana
+        +time hora_inicio
+        +time hora_fin
+    }
+
+    class Bloqueo {
+        +int id
+        +int barbero_id
+        +date fecha
+        +time hora_inicio
+        +time hora_fin
+        +es_dia_completo() bool
+    }
+
+    class TokenRecuperacion {
+        +int id
+        +int usuario_id
+        +string token_hash
+        +datetime expira_en
+        +bool usado
+        +esta_vigente(ahora) bool
+    }
+
+    class Sesion {
+        +int id
+        +int usuario_id
+        +string token_hash
+        +datetime creada_el
+        +datetime ultima_actividad
+        +esta_activa(ahora, limite) bool
+    }
+
+    class PoliticasNegocio {
+        <<singleton>>
+        +timedelta VIGENCIA_ENLACE_RECUPERACION = 1h
+        +int INTERVALO_MINUTOS = 30
+        +timedelta ANTICIPACION_MINIMA = 12h
+        +timedelta INACTIVIDAD_SESION = 15m
+        +int MAX_CITAS_ACTIVAS = 2
+        +int INASISTENCIAS_PARA_SUSPENDER = 2
+        +int MESES_VENTANA_INASISTENCIAS = 3
+        +int MESES_SUSPENSION = 1
+        +validar_anticipacion(fecha_hora_cita, ahora) bool
+        +evaluar_suspension_por_inasistencias(inasistencias) date
+    }
+
+    class CitaService {
+        <<service>>
+        +crear_cita(cliente_id, barbero_id, fecha, hora_inicio, servicios_ids) Cita
+        +cancelar_cita(cita_id, usuario_actual) Cita
+        +reprogramar_cita(cita_id, nueva_fecha, nueva_hora, usuario_actual) Cita
+        +marcar_atendida(cita_id, barbero_id) Cita
+        +marcar_inasistencia(cita_id, barbero_id) Cita
+        +obtener_disponibilidad(barbero_id, fecha, duracion) List~Slot~
+    }
+
+    class NotificacionService {
+        <<service>>
+        +enviar_confirmacion_reserva(cita) bool
+        +enviar_cancelacion(cita, motivo) bool
+        +enviar_inasistencia(cita, suspendido) bool
+        +enviar_recuperacion_contrasena(email, token) bool
+    }
+
+    %% Relaciones de Dominio
+    Usuario "1" --> "0..1" Barbero : "tiene perfil"
+    Usuario "1" --> "0..*" Cita : "reserva como cliente"
+    Usuario "1" *-- "0..*" TokenRecuperacion : "solicita"
+    Usuario "1" *-- "0..*" Sesion : "inicia"
+
+    Barbero "1" --> "0..*" Cita : "atiende"
+    Barbero "1" *-- "0..*" Disponibilidad : "define semanalmente"
+    Barbero "1" *-- "0..*" Bloqueo : "registra excepciones"
+
+    Cita "1" *-- "1..*" CitaServicio : "contiene detalle"
+    Servicio "1" --> "0..*" CitaServicio : "es seleccionado en"
+
+    %% Dependencias de Servicios
+    CitaService ..> Cita : "gestiona"
+    CitaService ..> PoliticasNegocio : "consulta reglas"
+    CitaService ..> NotificacionService : "dispara alertas"
+

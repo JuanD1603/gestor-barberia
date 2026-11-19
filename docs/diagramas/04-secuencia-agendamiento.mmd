@@ -1,0 +1,54 @@
+sequenceDiagram
+    autonumber
+    actor Cliente as Cliente
+    participant UI as Frontend (React / Vite)
+    participant Router as API Router (FastAPI)
+    participant CitaSvc as CitaService
+    participant Politicas as PoliticasNegocio
+    participant DB as Base de Datos (SQLAlchemy)
+    participant Notif as NotificacionService
+
+    Cliente->>UI: Selecciona barbero, servicios, fecha y hora
+    UI->>Router: POST /citas (barbero_id, fecha, hora_inicio, servicios_ids)
+    Note over Router: Valida sesion activa (RNF-02, PN-07)
+    Router->>CitaSvc: crear_cita(cliente_id, datos_cita)
+
+    CitaSvc->>Politicas: verificar_suspension(cliente_id)
+    alt Cliente suspendido por inasistencias
+        Politicas-->>CitaSvc: Error: Cuenta suspendida hasta fecha X
+        CitaSvc-->>Router: HTTP 400 Bad Request
+        Router-->>UI: Mensaje de sancion activa
+        UI-->>Cliente: Notificacion de suspension
+    else Cliente habilitado
+        Politicas-->>CitaSvc: Habilitado
+        CitaSvc->>Politicas: verificar_limite_citas_activas(cliente_id)
+        alt Excede maximo de 2 citas activas (PN-09)
+            Politicas-->>CitaSvc: Error: Limite alcanzado
+            CitaSvc-->>Router: HTTP 400 Bad Request
+            Router-->>UI: Limite de citas activas alcanzado
+            UI-->>Cliente: Alerta informativa
+        else Limite correcto
+            CitaSvc->>DB: Consultar bloqueos y citas existentes del barbero
+            DB-->>CitaSvc: Lista de solapamientos
+            alt Conflicto de horario o fuera de disponibilidad
+                CitaSvc-->>Router: HTTP 409 Conflict
+                Router-->>UI: Horario no disponible
+                UI-->>Cliente: Sugerencia de otro horario
+            else Horario libre y valido
+                CitaSvc->>CitaSvc: Generar codigo_reserva unico (ej. RES-ABC12)
+                CitaSvc->>CitaSvc: Calcular duracion total y precio snapshot
+                CitaSvc->>DB: INSERT INTO citas, INSERT INTO citas_servicios
+                DB-->>CitaSvc: Cita confirmada (ID, codigo, estado=Programada)
+                
+                par Envio de notificacion asincrona
+                    CitaSvc->>Notif: enviar_confirmacion_reserva(cita)
+                    Notif-->>Cliente: Email con detalles y codigo de reserva
+                and Respuesta al cliente
+                    CitaSvc-->>Router: CitaDetalleResponse (HTTP 201)
+                    Router-->>UI: JSON con reserva exitosa
+                    UI-->>Cliente: Pantalla de confirmacion con codigo
+                end
+            end
+        end
+    end
+

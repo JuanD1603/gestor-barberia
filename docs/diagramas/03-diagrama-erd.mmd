@@ -1,0 +1,92 @@
+erDiagram
+    USUARIOS ||--o| BARBEROS : "1 a 0..1 (usuario_id)"
+    USUARIOS ||--o{ CITAS : "1 a 0..N (cliente_id)"
+    USUARIOS ||--o{ TOKENS_RECUPERACION : "1 a 0..N (usuario_id)"
+    USUARIOS ||--o{ SESIONES : "1 a 0..N (usuario_id)"
+    BARBEROS ||--o{ CITAS : "1 a 0..N (barbero_id)"
+    BARBEROS ||--o{ DISPONIBILIDADES : "1 a 0..N (barbero_id)"
+    BARBEROS ||--o{ BLOQUEOS : "1 a 0..N (barbero_id)"
+    CITAS ||--|{ CITAS_SERVICIOS : "1 a 1..N (cita_id)"
+    SERVICIOS ||--o{ CITAS_SERVICIOS : "1 a 0..N (servicio_id)"
+
+    USUARIOS {
+        int id PK
+        string nombre "VARCHAR(120)"
+        string telefono "VARCHAR(25)"
+        string email UK "VARCHAR(120)"
+        string password_hash "VARCHAR(255)"
+        string rol "VARCHAR(20)"
+        date suspendido_hasta "DATE NULL"
+        boolean activo "BOOLEAN DEFAULT TRUE"
+    }
+
+    BARBEROS {
+        int id PK
+        int usuario_id FK "UNIQUE, RESTRICT"
+        string foto_url "VARCHAR(255) NULL"
+        boolean activo "BOOLEAN DEFAULT TRUE"
+    }
+
+    SERVICIOS {
+        int id PK
+        string nombre "VARCHAR(100)"
+        int duracion_minutos "INTEGER"
+        decimal precio "NUMERIC(10,2)"
+        boolean activo "BOOLEAN DEFAULT TRUE"
+    }
+
+    CITAS {
+        int id PK
+        string codigo_reserva UK "VARCHAR(20)"
+        int cliente_id FK "RESTRICT, INDEX"
+        int barbero_id FK "RESTRICT, INDEX"
+        date fecha "DATE, INDEX"
+        time hora_inicio "TIME"
+        time hora_fin "TIME"
+        string estado "VARCHAR(30), INDEX"
+        decimal total "NUMERIC(10,2)"
+        boolean reprogramada "BOOLEAN DEFAULT FALSE"
+        text notas "TEXT NULL"
+        datetime creada_el "DATETIME"
+    }
+
+    CITAS_SERVICIOS {
+        int id PK
+        int cita_id FK "CASCADE, INDEX"
+        int servicio_id FK "RESTRICT"
+        decimal precio_aplicado "NUMERIC(10,2)"
+        int duracion_minutos "INTEGER"
+    }
+
+    DISPONIBILIDADES {
+        int id PK
+        int barbero_id FK "CASCADE, INDEX"
+        int dia_semana "INTEGER (0-6)"
+        time hora_inicio "TIME"
+        time hora_fin "TIME"
+    }
+
+    BLOQUEOS {
+        int id PK
+        int barbero_id FK "CASCADE, INDEX"
+        date fecha "DATE, INDEX"
+        time hora_inicio "TIME NULL"
+        time hora_fin "TIME NULL"
+    }
+
+    TOKENS_RECUPERACION {
+        int id PK
+        int usuario_id FK "CASCADE, INDEX"
+        string token_hash UK "VARCHAR(64)"
+        datetime expira_en "DATETIME"
+        boolean usado "BOOLEAN DEFAULT FALSE"
+    }
+
+    SESIONES {
+        int id PK
+        int usuario_id FK "CASCADE, INDEX"
+        string token_hash UK "VARCHAR(64)"
+        datetime creada_el "DATETIME"
+        datetime ultima_actividad "DATETIME"
+    }
+

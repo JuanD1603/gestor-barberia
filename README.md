@@ -9,7 +9,7 @@
 [![Security](https://img.shields.io/badge/Security-Argon2id%20%2B%20RBAC-success.svg?style=flat-square)](#)
 [![Tests](https://img.shields.io/badge/Pytest-283%20passed%20(100%25)-brightgreen.svg?style=flat-square)](#)
 [![UML](https://img.shields.io/badge/UML-2.5%20ISO%2FIEC%2019505-blueviolet.svg?style=flat-square)](#)
-[![Status](https://img.shields.io/badge/Seguimiento-2%20Completado-orange.svg?style=flat-square)](#)
+[![Status](https://img.shields.io/badge/Entrega-Final%20v1.1-success.svg?style=flat-square)](#)
 
 ---
 
@@ -21,16 +21,16 @@
 - **Materia:** Ingeniería de Software II (Código 17934)  
 - **Docente:** Felipe Gutiérrez Isaza  
 - **Período:** 2026-2  
-- **Versión del Sistema:** 1.1 (Seguimiento 2)  
+- **Versión del Sistema:** 1.1 (Entrega Final)  
 
 ### 👥 Equipo de Desarrollo y Roles
 
 | Integrante | Rol Asignado | Responsabilidad Principal | Entregables Clave |
 | :--- | :--- | :--- | :--- |
-| **Elizabeth Ramirez** | *Líder Técnico & Backend Core* | Arquitectura del backend, modelos relacionales SQLAlchemy 2.0, API REST, modelado UML 2.5 y control de integración continua. | `src/backend/`, modelos ORM, `docs/diagramas-uml.md`, `compilar_diagramas.py`, favicon corporativo. |
+| **Elizabeth Ramirez** | *Líder Técnico & Backend Core* | Arquitectura del backend, modelos relacionales SQLAlchemy 2.0, API REST, modelado UML 2.5, notificaciones multicanal y control de integración continua. | `src/backend/`, modelos ORM, `docs/diagramas-uml.md`, `compilar_diagramas.py`, favicon corporativo. |
 | **Juan David Monroy** | *Documentación & Requisitos Formales* | Especificación de requisitos formales (RF/RNF), historias de usuario con criterios Gherkin y manual de gestión ágil. | `README.md`, `docs/especificacion.md`, `docs/guia-trello.md`. |
 | **Sebastian Orozco** | *Responsable de Pruebas & QA* | Diseño de casos de prueba formales (Partición de Equivalencia y BVA), suite automatizada con `pytest` y pruebas de rendimiento. | `docs/plan-de-pruebas.md`, 9 suites de pruebas unitarias/integración (283 tests), pruebas frontend JS. |
-| **Juan David Osorio** | *Responsable de Calidad & Mantenimiento* | Auditoría de código, aseguramiento de seguridad (Argon2id), registro formal de defectos (`DEF-001` a `DEF-006`) y categorización ISO/IEC 14764. | `docs/informe-calidad.md`, auditoría `.env.example`, gestión de mantenimiento de software. |
+| **Juan David Osorio** | *Responsable de Calidad & Mantenimiento* | Auditoría de código, aseguramiento de seguridad (Argon2id), registro formal de defectos (`DEF-001` a `DEF-007`) y categorización ISO/IEC 14764. | `docs/informe-calidad.md`, auditoría `.env.example`, gestión de mantenimiento de software. |
 
 ---
 
@@ -48,9 +48,9 @@ El objetivo de **BarberShop Pro** es solucionar de forma automatizada las inefic
 1. **Agendamiento Inteligente sin Choques (Zero Overbooking)**: Algoritmo matemático estricto que evalúa en tiempo real colisiones entre franjas horarias:
    $$\max(\text{Inicio}_A, \text{Inicio}_B) < \min(\text{Fin}_A, \text{Fin}_B)$$
    Permitiendo citas consecutivas contiguas ($\text{Fin}_A = \text{Inicio}_B$) sin falsos positivos.
-2. **Citas Multiservicio**: Capacidad para agrupar múltiples servicios en un mismo turno, calculando automáticamente la duración total acumulada y el costo total con precios congelados (`CitaServicio`).
+2. **Citas Multiservicio con Flujo Invertido**: Selección intuitiva primero del barbero preferido y posterior elección de los servicios deseados, calculando automáticamente la duración acumulada y costo total con precios congelados (`CitaServicio`).
 3. **Control de Acceso Basado en Roles (RBAC)**: Tres perfiles con permisos independientes: **Cliente** (autogestión), **Barbero** (agenda, disponibilidad y marcación de asistencia) y **Administrador** (gestión de personal, catálogo y supervisión global).
-4. **Notificaciones Omnicanal**: Motor asíncrono en segundo plano (`BackgroundTasks`) con despacho de correos HTML para confirmación, reprogramación, cancelación y recordatorios.
+4. **Notificaciones Multicanal**: Motor asíncrono en segundo plano (`BackgroundTasks`) con despacho de correos HTML, y soporte de alertas por Telegram y WhatsApp.
 5. **Políticas de Inasistencia y Penalización**: Suspensión automática de clientes por 1 mes al acumular 2 inasistencias en una ventana de 3 meses (**PN-10**).
 6. **Trazabilidad Inmediata**: Códigos institucionales alfanuméricos únicos con formato `BSP-XXXXXX`.
 
@@ -63,6 +63,7 @@ El proyecto adopta una **arquitectura desacoplada en cuatro capas**:
 ```mermaid
 graph TD
     subgraph Frontend["Capa de Presentación (React 18 + Vite SPA)"]
+        UI_W[WelcomePage.jsx - Landing de Bienvenida]
         UI_A[AuthPage.jsx - Login / Registro / Ley 1581]
         UI_B[BookingWizard.jsx - Reserva Multiservicio]
         UI_G[BarberAgenda.jsx - Agenda y Bloqueos Barbero]
@@ -78,7 +79,7 @@ graph TD
 
     subgraph Domain["Capa de Dominio y Servicios de Negocio"]
         SRV[CitaService & DisponibilidadService]
-        NOTIF[Motor Asíncrono de Notificaciones SMTP]
+        NOTIF[Motor Asíncrono de Notificaciones SMTP, Telegram y WhatsApp]
         POL[politicas.py - Reglas de Negocio PN-01 a PN-13]
     end
 
@@ -185,8 +186,9 @@ gestor-barberia/
 │   ├── diagramas/                 # Fuentes Mermaid (.mmd), imágenes PNG (x2) y SVG vectoriales
 │   │   └── compilar_diagramas.py  # Script automatizado de compilación de diagramas
 │   ├── plan-de-pruebas.md         # Técnicas formales (Partición de Equivalencia y BVA)
-│   ├── informe-calidad.md         # Auditoría v2.0, registro de defectos (DEF-001 a DEF-006) e ISO 14764
+│   ├── informe-calidad.md         # Auditoría v2.1, registro de defectos (DEF-001 a DEF-007) e ISO 14764
 │   ├── informe-semanal-2          # Informe técnico y evolutivo detallado de la Semana 2 (Seguimiento 2)
+│   ├── informe-semanal-3          # Informe técnico de la Semana 3 (Entrega Final y Nuevos Avances)
 │   └── guia-trello.md             # Manual metodológico de gestión Kanban y matriz RACI
 ├── src/                           # Código fuente del sistema
 │   ├── backend/                   # Backend profesional en FastAPI
@@ -194,7 +196,7 @@ gestor-barberia/
 │   │   ├── database.py            # Motor SQLAlchemy y generador de sesión de BD
 │   │   ├── main.py                # Routers REST, middlewares de seguridad y CORS
 │   │   ├── models.py              # 8 Entidades ORM (Usuario, Barbero, Servicio, Cita, etc.)
-│   │   ├── notificaciones.py      # Motor SMTP asíncrono en segundo plano
+│   │   ├── notificaciones.py      # Motor SMTP asíncrono y alertas Telegram/WhatsApp
 │   │   ├── plantillas_correo.py   # Plantillas HTML responsivas para notificaciones
 │   │   ├── politicas.py           # Reglas de negocio desacopladas (PN-01 a PN-13)
 │   │   ├── requirements.txt       # Dependencias declaradas (FastAPI, Argon2id, SQLAlchemy, etc.)
@@ -207,8 +209,8 @@ gestor-barberia/
 │       └── src/
 │           ├── AuthContext.jsx    # Manejo global de autenticación, roles y sesión
 │           ├── api.js             # Cliente API unificado con cabeceras Bearer
-│           └── components/        # Vistas: AdminPanel, BarberAgenda, BookingWizard, SearchBooking
-└── tests/                         # Suite de pruebas automatizadas con Pytest (283 pruebas)
+│           └── components/        # Vistas: WelcomePage, AdminPanel, BarberAgenda, BookingWizard, SearchBooking
+└── tests/                         # Suite de pruebas automatizadas con Pytest (283+ pruebas)
     ├── conftest.py                # Fixtures de BD aislada en memoria y tokens RBAC
     ├── test_admin.py              # Pruebas del panel de administración
     ├── test_agendamiento.py       # Pruebas de agendamiento multiservicio y solapamiento
@@ -218,7 +220,7 @@ gestor-barberia/
     ├── test_gestion_citas.py      # Pruebas de cancelación y reprogramación (12h)
     ├── test_inasistencias.py      # Pruebas de suspensión preventiva por inasistencias
     ├── test_no_funcionales.py     # Pruebas RNF (concurrencia 20 hilos, carga 500 citas, SQLi)
-    └── test_notificaciones.py     # Pruebas de despacho asíncrono y sanitización SMTP
+    └── test_notificaciones.py     # Pruebas de despacho asíncrono, Telegram, WhatsApp y sanitización
 ```
 
 ---
@@ -297,7 +299,7 @@ npm run dev
 
 ## 🧪 8. Ejecución de Pruebas Automatizadas
 
-Para correr la suite de **283 pruebas unitarias, de integración y no funcionales**:
+Para correr la suite de **pruebas unitarias, de integración y no funcionales**:
 
 ```bash
 # Estando en la raíz del proyecto o en src/backend con el entorno virtual activo:
@@ -353,6 +355,16 @@ npm test
 * **Seguimiento 1:** `git tag entrega-s1`
 * **Seguimiento 2:** `git tag entrega-s2`
 * **Entrega Final:** `git tag entrega-final`
+
+---
+
+## 🖥️ Pasos para ejecución rápida desde CMD (Windows)
+```cmd
+cd Desktop
+cd gestor-barberia
+iniciar-backend.bat
+iniciar-frontend.bat
+```
 
 ---
 
