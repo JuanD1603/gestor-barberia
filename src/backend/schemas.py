@@ -8,7 +8,8 @@ from pydantic import (
 from politicas import INTERVALO_MINUTOS  # PN-02
 
 # RF-17: franja del día que elige el cliente (las horas de cada franja, PN-03, van en la capa de servicios)
-Franja = Literal["Mañana", "Tarde", "Noche"]
+# "Todo" es una franja sintética que devuelve todos los turnos del día sin filtrar por turno.
+Franja = Literal["Mañana", "Tarde", "Noche", "Todo"]
 
 # RF-27: estados que puede marcar el barbero sobre una cita
 ESTADOS_QUE_MARCA_EL_BARBERO = ("Atendida", "Cancelada", "Inasistencia")
