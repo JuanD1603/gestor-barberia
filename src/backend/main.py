@@ -155,6 +155,20 @@ def listar_servicios(_usuario: Usuario = Depends(cliente_o_admin), db: Session =
     return services.listar_servicios(db)
 
 
+@app.get(
+    "/api/barberos/{barbero_id}/disponibilidad",
+    response_model=List[schemas.DisponibilidadResponse],
+    tags=["Catálogo"],
+)
+def disponibilidad_publica_barbero(
+    barbero_id: int,
+    _usuario: Usuario = Depends(cliente_o_admin),
+    db: Session = Depends(get_db),
+):
+    """Devuelve el horario semanal configurado por el barbero, visible para clientes al elegir."""
+    return services.listar_disponibilidad_por_id(db, barbero_id)
+
+
 # ==========================================
 # Administrador: barberos, servicios y citas (RF-05 a RF-10, RF-28)
 # ==========================================

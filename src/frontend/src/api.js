@@ -265,6 +265,7 @@ export const api = {
   // Catálogo (cliente o administrador)
   barberos: () => get('/barberos'),
   servicios: () => get('/servicios'),
+  disponibilidadBarbero: (barberoId) => get(`/barberos/${barberoId}/disponibilidad`),
 
   // Agendamiento (cliente)
   resumenCita: (serviciosIds) => get('/citas/resumen', { servicios_ids: serviciosIds }),
