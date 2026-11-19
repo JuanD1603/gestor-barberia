@@ -412,6 +412,14 @@ def listar_disponibilidad(db: Session, usuario: Usuario) -> List[Disponibilidad]
     ).all()
 
 
+def listar_disponibilidad_por_id(db: Session, barbero_id: int) -> List[Disponibilidad]:
+    """Horario semanal de un barbero por su ID, sin requerir sesión de barbero (uso público)."""
+    _barbero_activo(db, barbero_id)
+    return db.query(Disponibilidad).filter(Disponibilidad.barbero_id == barbero_id).order_by(
+        Disponibilidad.dia_semana, Disponibilidad.hora_inicio
+    ).all()
+
+
 def agregar_disponibilidad(db: Session, usuario: Usuario, datos: schemas.DisponibilidadCreate) -> Disponibilidad:
     """Un rango que se solapa con otro del mismo día se rechaza; uno contiguo se une al existente."""
     barbero = _barbero_de_usuario(db, usuario)
